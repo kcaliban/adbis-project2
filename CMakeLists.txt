@@ -3,4 +3,6 @@ project(project2)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(project2 main.cpp)
+configure_file(100k.txt 100k.txt COPYONLY)
+configure_file(watdiv.10M.nt watdiv.10M.nt COPYONLY)
+add_executable(project2 main.cpp TwoColumnTable.cpp TwoColumnTable.h)
