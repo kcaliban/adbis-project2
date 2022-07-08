@@ -14,14 +14,14 @@ class Relation {
 public:
     explicit Relation(const std::string&, const std::vector<std::string>&);
     virtual ~Relation();
-    void AddRow(const std::vector<std::string>&);
-    const std::vector<std::vector<std::string>> & GetRows() const;
+    void AddRow(const std::vector<std::string>*);
+    const std::vector<const std::vector<std::string>*> & GetRows() const;
     const std::vector<std::string> & GetColumnNames() const;
     std::string GetName() const;
     std::string ToString(int n);
     Relation SelectWhere(const std::string &, const std::string &) const;
 private:
-    std::vector<std::vector<std::string>> rows;
+    std::vector<const std::vector<std::string>*> rows;
     std::vector<std::string> columnNames;
     std::string name;
 };

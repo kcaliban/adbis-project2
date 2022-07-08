@@ -15,16 +15,16 @@ Relation::Relation(const std::string & name, const std::vector<std::string> & co
 
 Relation::~Relation() = default;
 
-void Relation::AddRow(const std::vector<std::string> & row) {
+void Relation::AddRow(const std::vector<std::string> * row) {
     // Delete size check if not performant
-    if (row.size() != this->columnNames.size())
-        std::cout << "Adding row with wrong column size:  " << row.size() << " does not fit into "
+    if (row->size() != this->columnNames.size())
+        std::cout << "Adding row with wrong column size:  " << row->size() << " does not fit into "
                                                             << this->columnNames.size() << std::endl;
 
     this->rows.push_back(row);
 }
 
-const std::vector<std::vector<std::string>> & Relation::GetRows() const {
+const std::vector<const std::vector<std::string>*> & Relation::GetRows() const {
     return this->rows;
 }
 
@@ -50,7 +50,7 @@ std::string Relation::ToString(int n) {
     for (int i = 0; i < std::min(this->rows.size(), (size_t) n); i++) {
         auto const & row = this->rows[i];
         sstream << std::endl << "|";
-        for (auto const & col : row) {
+        for (auto const & col : *row) {
             sstream << " " << std::left << std::setw(25) << col << " |";
         }
         sstream << std::endl << "-";
@@ -69,7 +69,7 @@ Relation Relation::SelectWhere(const std::string & columnName, const std::string
             idx = i;
 
     for (auto const & row : this->rows) {
-        if (row[idx] == columnEntry) {
+        if ((*row)[idx] == columnEntry) {
             output.AddRow(row);
         }
     }
