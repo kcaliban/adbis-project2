@@ -5,4 +5,4 @@ set(CMAKE_CXX_STANDARD 20)
 
 configure_file(100k.txt 100k.txt COPYONLY)
 configure_file(watdiv.10M.nt watdiv.10M.nt COPYONLY)
-add_executable(project2 main.cpp Relation.cpp Relation.h HashJoin.cpp HashJoin.h IRow.h Row.cpp Row.h PtrRow.cpp PtrRow.h)
+add_executable(project2 main.cpp Relation.h HashJoin.h)
