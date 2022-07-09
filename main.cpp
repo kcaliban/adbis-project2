@@ -5,6 +5,7 @@
 #include <sstream>
 #include "Relation.h"
 #include "HashJoin.h"
+#include "Row.h"
 
 
 std::unordered_map<std::string, Relation*> getPartitionTablesFromRDF(const std::string& fileName) {
@@ -32,7 +33,7 @@ std::unordered_map<std::string, Relation*> getPartitionTablesFromRDF(const std::
                 );
                 it = result.first;
             }
-            auto const * row = new std::vector<std::string> { subject, object };
+            auto * row = new Row(std::vector<std::string> { subject, object });
             it->second->AddRow(row);
         }
     }
@@ -50,11 +51,10 @@ int process100k() {
     std::cout << followsRelation->SelectWhere("Subject", "wsdbm:User1").ToString(5) << std::endl;
     std::cout << friendOfRelation->SelectWhere("Subject", "wsdbm:User123").ToString(5) << std::endl;
 
-    /*
     HashJoin hashJoin = HashJoin();
     auto joined = hashJoin.Join(followsRelation, "Object", friendOfRelation, "Subject");
-    std::cout << joined.SelectWhere("Subject", "wsdbm:User1").ToString(5) << std::endl;
-     */
+    std::cout << joined->ToString(5) << std::endl;
+    std::cout << joined->SelectWhere("Subject", "wsdbm:User1").ToString(5) << std::endl;
 }
 
 int processWatdiv10M() {
@@ -82,7 +82,7 @@ int processWatdiv10M() {
 }
 
 int main() {
-    //process100k();
+    // process100k();
     processWatdiv10M();
     return 0;
 }

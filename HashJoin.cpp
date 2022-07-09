@@ -3,11 +3,12 @@
 //
 
 #include "HashJoin.h"
-#include "JoinResult.h"
+#include "PtrRow.h"
 #include <iostream>
 #include <algorithm>
+#include <math.h>
 
-JoinResult *
+Relation *
 HashJoin::Join(const Relation * A, const std::string & columnA,
                const Relation * B, const std::string & columnB) {
     // Determine the smaller of the two relations, handle accordingly
@@ -30,7 +31,8 @@ void HashJoin::Build(const Relation * A) {
 
     auto const & rows = A->GetRows();
     for (auto const & row : rows) {
-        auto const & col = (*row)[columnAIndex];
+        auto const & cols = row->GetColPtrs();
+        auto const & col = *(cols[columnAIndex]);
         // Initialize vector in hashMap if required; find should be constant time
         auto it = hashMap.find(col);
         if (it == hashMap.end()) {
@@ -41,7 +43,7 @@ void HashJoin::Build(const Relation * A) {
     }
 }
 
-JoinResult * HashJoin::Probe(const Relation * A, const Relation * B, const std::string& column) {
+Relation * HashJoin::Probe(const Relation * A, const Relation * B, const std::string& column) {
     std::cout << "PROBING" << std::endl;
 
     // Initialize output
@@ -61,10 +63,7 @@ JoinResult * HashJoin::Probe(const Relation * A, const Relation * B, const std::
             columns.push_back(col);
     }
 
-    auto output = new JoinResult(columns,
-                                 columnAIndex,
-                                 std::max(A->GetRows().size(),
-                                          B->GetName().size()));
+    auto output = new Relation(relationName, columns);
 
     int idx;
     for (int i = 0; i < columnNamesB.size(); i++)
@@ -72,24 +71,37 @@ JoinResult * HashJoin::Probe(const Relation * A, const Relation * B, const std::
             idx = i;
 
     auto const & rows = B->GetRows();
-    int i = 0;
     for (auto const & row : rows) {
-        i++;
-        auto const & joinCol = (*row)[idx];
+        auto const & colBPtrs = row->GetColPtrs();
+        auto const & joinCol = *(colBPtrs[idx]);
         auto const & it = hashMap.find(joinCol);
         if (it == hashMap.end()) continue;
 
         auto const & mapRows = it->second;
 
         for (auto const & mapRow : mapRows) {
-           output->AddRow(mapRow, row);
+            std::vector<const std::string*> ptrs;
+            auto const & colAPtrs = mapRow->GetColPtrs();
+
+            for (int i = 0; i < colAPtrs.size(); i++) {
+                if (i == columnAIndex) continue;
+                ptrs.push_back(colAPtrs[i]);
+            }
+
+            ptrs.push_back(colBPtrs[columnBIndex]);
+
+            for (int i = 0; i < colBPtrs.size(); i++) {
+                if (i == columnBIndex) continue;
+                ptrs.push_back(colBPtrs[i]);
+            }
+
+            output->AddRow(new PtrRow(ptrs));
         }
     }
 
-    std::cout << output->GetRowCount() << std::endl;
-
     return output;
 }
+
 
 void HashJoin::InitializeIndices(const Relation * A, const Relation * B,
                                  const std::string & columnA, const std::string & columnB) {
