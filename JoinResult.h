@@ -10,9 +10,9 @@
 
 class JoinResult {
 public:
-    JoinResult(const std::vector<std::string> & columnNames, unsigned int excludedColumnIndexOfA);
+    JoinResult(const std::vector<std::string> & columnNames, unsigned int excludedColumnIndexOfA, size_t reservedSpace);
     virtual ~JoinResult() = default;
-    void AddRow(const std::vector<std::string>* &, const std::vector<std::string>* &);
+    void AddRow(const std::vector<std::string>*, const std::vector<std::string>*);
     size_t GetRowCount();
    //  std::string ToString(int n);
 private:

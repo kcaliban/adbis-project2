@@ -7,16 +7,21 @@
 #include <iomanip>
 #include <iostream>
 
-JoinResult::JoinResult(const std::vector<std::string> &columnNames, unsigned int excludedColumnIndexOfA) {
+JoinResult::JoinResult(const std::vector<std::string> &columnNames,
+                       unsigned int excludedColumnIndexOfA,
+                       size_t reservedSpace) {
     this->columnNames = columnNames;
     this->excludedColumnIndexOfA = excludedColumnIndexOfA;
+    // To save memory when re-allocating the rows vector, we reserve some space.
+    this->rows.reserve(reservedSpace);
 }
 
-void JoinResult::AddRow(const std::vector<std::string> * & rowA, const std::vector<std::string> * & rowB) {
+void JoinResult::AddRow(const std::vector<std::string> * rowA, const std::vector<std::string> * rowB) {
     this->rows.emplace_back(
-        std::pair(rowA, rowB)
+            std::pair(rowA, rowB)
     );
 }
+
 
 size_t JoinResult::GetRowCount() {
     return this->rows.size();

@@ -5,6 +5,7 @@
 #include "HashJoin.h"
 #include "JoinResult.h"
 #include <iostream>
+#include <algorithm>
 
 JoinResult *
 HashJoin::Join(const Relation * A, const std::string & columnA,
@@ -48,6 +49,7 @@ JoinResult * HashJoin::Probe(const Relation * A, const Relation * B, const std::
     auto const & columnNamesB = B->GetColumnNames();
     auto relationName = A->GetName() + "_" + B->GetName();
     std::vector<std::string> columns;
+
     // Left over column names from A, Name from A + Name from B, Left over column names from B
     for (int i = 0; i < columnNamesA.size(); i++) {
         if (i != columnAIndex)
@@ -58,7 +60,11 @@ JoinResult * HashJoin::Probe(const Relation * A, const Relation * B, const std::
         if (col != column)
             columns.push_back(col);
     }
-    auto output = new JoinResult(columns, columnAIndex);
+
+    auto output = new JoinResult(columns,
+                                 columnAIndex,
+                                 std::max(A->GetRows().size(),
+                                          B->GetName().size()));
 
     int idx;
     for (int i = 0; i < columnNamesB.size(); i++)
@@ -67,17 +73,17 @@ JoinResult * HashJoin::Probe(const Relation * A, const Relation * B, const std::
 
     auto const & rows = B->GetRows();
     int i = 0;
-    for (auto row : rows) {
+    for (auto const & row : rows) {
         i++;
         auto const & joinCol = (*row)[idx];
         auto const & it = hashMap.find(joinCol);
         if (it == hashMap.end()) continue;
 
         auto const & mapRows = it->second;
-        for (auto mapRow : mapRows) {
-            output->AddRow(mapRow, row);
+
+        for (auto const & mapRow : mapRows) {
+           output->AddRow(mapRow, row);
         }
-        const std::string lol = "lol";
     }
 
     std::cout << output->GetRowCount() << std::endl;
