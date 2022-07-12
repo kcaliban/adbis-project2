@@ -17,22 +17,33 @@
 
 class HashJoin {
 public:
-    explicit HashJoin() = default;
-    void Join(CSVReader * A, const std::string& columnA,
-              CSVReader * B, const std::string& columnB,
-              const std::string& outputFile, unsigned int cacheSize);
-    void Reset();
+    explicit HashJoin(CSVReader * A, const std::string& columnA,
+                      CSVReader * B, const std::string& columnB,
+                      const std::string& outputFile, unsigned int cacheSize);
+    void Join(unsigned int hashTableSize);
+    virtual ~HashJoin() {
+        delete output;
+    }
 private:
     unsigned int columnAIndex;
     unsigned int columnBIndex;
+    std::string columnA;
+    std::string columnB;
+    std::string outputFile;
+    unsigned int cacheSize;
+    CSVReader * A;
+    CSVReader * B;
+    CSVWriter * output;
+
     std::unordered_map<std::string, std::vector<std::vector<std::string>>> hashMap;
 
-    void InitializeIndices(CSVReader * A, CSVReader * B,
-                           const std::string & columnA, const std::string & columnB);
+    void InitializeIndices();
 
-    void Build(CSVReader *A);
+    void Probe();
 
-    void Probe(CSVReader * A, CSVReader * B, const std::string& column, const std::string& filename, unsigned int cacheSize);
+    void InitializeOutput();
+
+    unsigned int GetHashTableSize();
 };
 
 #endif //PROJECT2_HASHJOIN_H

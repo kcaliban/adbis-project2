@@ -68,6 +68,7 @@ void getPartitionTablesFromRDF(const std::string& fileName, const std::string& o
 }
 
 
+/*
 int process100k() {
     // 4 GB Cache size
     unsigned int cacheSize = pow(2, 35);
@@ -112,12 +113,15 @@ int process100k() {
     auto follows_friendOf_likes_hasReview = new CSVReader(outputFilePath, ',', "follows_friendOf_likes");
     hashJoin.Reset();
 }
+ */
 
 int processWatdiv10M() {
-    // 2GB
+    // 4GB
     unsigned int cacheSize = 2 * pow(2, 30);
+    // 4GB
+    unsigned int hashMapSize = 2 * pow(2, 30);
 
-    // getPartitionTablesFromRDF("watdiv.10M.nt", "watdiv_10M_nt", cacheSize);
+    getPartitionTablesFromRDF("watdiv.10M.nt", "watdiv_10M_nt", cacheSize);
 
     auto followsRelationFileName = "http___dbuwaterlooca_galuc_wsdbm_follows.csv";
     auto followsRelationPath = std::filesystem::path("watdiv_10M_nt") / std::filesystem::path(followsRelationFileName);
@@ -135,27 +139,29 @@ int processWatdiv10M() {
     auto hasReviewPath = std::filesystem::path("watdiv_10M_nt") / std::filesystem::path(hasReviewFileName);
     auto hasReviewRelation = new CSVReader(hasReviewPath, ',', "hasReview");
 
-    HashJoin hashJoin = HashJoin();
     // hasReview JOIN likes
     auto outputFileName = "hasReview_likes.csv";
     auto outputFilePath = std::filesystem::path("watdiv_10M_nt") / std::filesystem::path(outputFileName);
-    hashJoin.Join(hasReviewRelation, "Subject", likesRelation, "Object", outputFilePath, cacheSize);
+    auto hashJoin = new HashJoin(hasReviewRelation, "Subject", likesRelation, "Object", outputFilePath, cacheSize);
+    hashJoin->Join(hashMapSize);
     auto hasReview_likes = new CSVReader(outputFilePath, ',', "hasReview_likes");
-    hashJoin.Reset();
+    delete hashJoin;
 
     // JOIN friendOf
     outputFileName = "hasReview_likes_friendOf.csv";
     outputFilePath = std::filesystem::path("watdiv_10M_nt") / std::filesystem::path(outputFileName);
-    hashJoin.Join(hasReview_likes, "Subject", friendOfRelation, "Object", outputFilePath, cacheSize);
+    hashJoin = new HashJoin(hasReview_likes, "Subject", friendOfRelation, "Object", outputFilePath, cacheSize);
+    hashJoin->Join(hashMapSize);
     auto hasReview_likes_friendOf = new CSVReader(outputFilePath, ',', "hasReview_likes_friendOf");
-    hashJoin.Reset();
+    delete hashJoin;
 
     // JOIN follows
     outputFileName = "hasReview_likes_friendOf_follows.csv";
     outputFilePath = std::filesystem::path("watdiv_10M_nt") / std::filesystem::path(outputFileName);
-    hashJoin.Join(hasReview_likes_friendOf, "Subject", followsRelation, "Object", outputFilePath, cacheSize);
+    hashJoin = new HashJoin(hasReview_likes_friendOf, "Subject", followsRelation, "Object", outputFilePath, cacheSize);
+    hashJoin->Join(hashMapSize);
     auto hasReview_likes_friendOf_follows = new CSVReader(outputFilePath, ',', "hasReview_likes_friendOf_follows");
-    hashJoin.Reset();
+    delete hashJoin;
 }
 
 

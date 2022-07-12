@@ -28,4 +28,10 @@ std::vector<std::string> CSVReader::GetNextRow() {
     return row;
 }
 
+void CSVReader::JumpToBegin() {
+    istream.clear();
+    istream.seekg(0);
+    this->GetNextRow();
+}
+
 

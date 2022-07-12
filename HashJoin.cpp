@@ -4,34 +4,34 @@
 
 #include "HashJoin.h"
 
-void HashJoin::Join(CSVReader * A, const std::string& columnA,
-                    CSVReader * B, const std::string& columnB,
-                    const std::string & outputFile, unsigned int cacheSize)  {
-    InitializeIndices(A, B, columnA, columnB);
-    Build(A);
-    Probe(A, B, columnB, outputFile, cacheSize);
+HashJoin::HashJoin(CSVReader *A, const std::string &columnA, CSVReader *B, const std::string &columnB,
+                   const std::string &outputFile, unsigned int cacheSize) {
+    this->A = A;
+    this->columnA = columnA;
+    this->B = B;
+    this->columnB = columnB;
+    this->outputFile = outputFile;
+    this->cacheSize = cacheSize;
+
+    InitializeIndices();
+    InitializeOutput();
 }
 
-void HashJoin::Reset() {
-    this->columnBIndex = 0;
-    this->columnAIndex = 0;
-    std::unordered_map<std::string, std::vector<std::vector<std::string>>>().swap(this->hashMap);
+unsigned int HashJoin::GetHashTableSize() {
+    // Approximate
+    if (hashMap.empty()) return 0;
+
+    auto rows = hashMap.begin()->second;
+    size_t size = hashMap.size() * (sizeof(rows) + rows.size() * (
+            sizeof(rows[0]) + rows[0].size() * (
+                    sizeof(rows[0][0]) + rows[0][0].length()
+            )
+    ));
+
+    return size;
 }
 
-void HashJoin::InitializeIndices(CSVReader *A, CSVReader *B,
-                                 const std::string &columnA, const std::string &columnB) {
-    auto const & columnNamesA = A->columnNames;
-    for (int i = 0; i < columnNamesA.size(); i++)
-        if (columnNamesA[i] == columnA)
-            this->columnAIndex = i;
-
-    auto const & columnNamesB = B->columnNames;
-    for (int i = 0; i < columnNamesB.size(); i++)
-        if (columnNamesB[i] == columnB)
-            this->columnBIndex = i;
-}
-
-void HashJoin::Build(CSVReader *A) {
+void HashJoin::Join(unsigned int hashTableSize)  {
     std::cout << "BUILDING" << std::endl;
 
     auto row = A->GetNextRow();
@@ -46,15 +46,19 @@ void HashJoin::Build(CSVReader *A) {
         }
         it->second.push_back(row);
 
+        if (GetHashTableSize() > hashTableSize) {
+            Probe();
+            hashMap.clear();
+            std::cout << "BUILDING" << std::endl;
+        }
+
         row = A->GetNextRow();
     }
 
+    Probe();
 }
 
-void HashJoin::Probe(CSVReader *A, CSVReader *B, const std::string &column,
-                     const std::string &filename, unsigned int cacheSize) {
-    std::cout << "PROBING" << std::endl;
-
+void HashJoin::InitializeOutput() {
     // Initialize output
     auto const & columnNamesA = A->columnNames;
     auto const & columnNamesB = B->columnNames;
@@ -68,13 +72,30 @@ void HashJoin::Probe(CSVReader *A, CSVReader *B, const std::string &column,
     }
     columns.push_back(A->tableName + "_" + B->tableName);
     for (auto const & col : columnNamesB) {
-        if (col != column) {
+        if (col != columnB) {
             columns.push_back(col);
         }
     }
 
-    auto output = CSVWriter(filename, columns, ',', cacheSize);
+    this->output = new CSVWriter(outputFile, columns, ',', cacheSize);
+}
 
+void HashJoin::InitializeIndices() {
+    auto const & columnNamesA = A->columnNames;
+    for (int i = 0; i < columnNamesA.size(); i++)
+        if (columnNamesA[i] == columnA)
+            this->columnAIndex = i;
+
+    auto const & columnNamesB = B->columnNames;
+    for (int i = 0; i < columnNamesB.size(); i++)
+        if (columnNamesB[i] == columnB)
+            this->columnBIndex = i;
+}
+
+void HashJoin::Probe() {
+    std::cout << "PROBING" << std::endl;
+
+    B->JumpToBegin();
     auto row = B->GetNextRow();
 
     while (!row.empty()) {
@@ -98,7 +119,7 @@ void HashJoin::Probe(CSVReader *A, CSVReader *B, const std::string &column,
                 newRow.push_back(row[i]);
             }
 
-            output.WriteNextRow( newRow);
+            output->WriteNextRow( newRow);
         }
 
         row = B->GetNextRow();
