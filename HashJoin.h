@@ -5,7 +5,6 @@
 #ifndef PROJECT2_HASHJOIN_H
 #define PROJECT2_HASHJOIN_H
 
-#include "Relation.h"
 #include <unordered_map>
 #include <vector>
 #include <string>

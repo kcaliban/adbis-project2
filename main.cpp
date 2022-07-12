@@ -3,7 +3,6 @@
 #include <string>
 #include <unordered_map>
 #include <filesystem>
-#include "Relation.h"
 #include "HashJoin.h"
 #include "CSVWriter.h"
 #include <cmath>
