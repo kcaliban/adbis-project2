@@ -5,12 +5,12 @@
 #include "HashJoin.h"
 
 HashJoin::HashJoin(CSVReader *A, const std::string &columnA, CSVReader *B, const std::string &columnB,
-                   const std::string &outputFile, unsigned int cacheSize) {
+                   std::ostream *ostream, unsigned int cacheSize) {
     this->A = A;
     this->columnA = columnA;
     this->B = B;
     this->columnB = columnB;
-    this->outputFile = outputFile;
+    this->ostream = ostream;
     this->cacheSize = cacheSize;
 
     InitializeIndices();
@@ -56,6 +56,7 @@ void HashJoin::Join(unsigned int hashTableSize)  {
     }
 
     Probe();
+    output->FlushCache();
 }
 
 void HashJoin::InitializeOutput() {
@@ -77,7 +78,7 @@ void HashJoin::InitializeOutput() {
         }
     }
 
-    this->output = new CSVWriter(outputFile, columns, ',', cacheSize);
+    this->output = new CSVWriter(ostream, columns, ',', cacheSize);
 }
 
 void HashJoin::InitializeIndices() {

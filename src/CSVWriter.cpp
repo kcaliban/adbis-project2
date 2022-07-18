@@ -5,16 +5,16 @@
 #include "CSVWriter.h"
 #include <iostream>
 
-CSVWriter::CSVWriter(const std::string &filename, const std::vector<std::string> &columnNames,
+CSVWriter::CSVWriter(std::ostream * ostream, const std::vector<std::string> &columnNames,
                      const char & delim, unsigned int cacheSize) {
-    ostream.open(filename);
+    this->ostream = ostream;
     std::string headerRow;
     for (const auto & column : columnNames) {
         if (!headerRow.empty())
             headerRow += delim;
         headerRow += column;
     }
-    ostream << headerRow << std::endl;
+    *ostream << headerRow << std::endl;
 
     this->delim = delim;
     this->cacheSize = cacheSize;
@@ -53,5 +53,5 @@ void CSVWriter::WriteRow(const std::vector<std::string> &row) {
             rowString += delim;
         rowString += column;
     }
-    ostream << rowString << std::endl;
+    *ostream << rowString << std::endl;
 }

@@ -11,20 +11,19 @@
 
 class CSVWriter {
 public:
-    explicit CSVWriter(const std::string & filename, const std::vector<std::string> & columnNames,
+    explicit CSVWriter(std::ostream * ostream, const std::vector<std::string> & columnNames,
                        const char & delim, unsigned int cacheSize);
     void WriteNextRow(const std::vector<std::string> & row);
     virtual ~CSVWriter() {
         FlushCache();
         std::vector<std::vector<std::string>>().swap(cachedRows);
-        ostream.close();
     }
+    void FlushCache();
 private:
-    std::ofstream ostream;
+    std::ostream * ostream;
     std::vector<std::vector<std::string>> cachedRows;
     char delim;
     unsigned int cacheSize;
-    void FlushCache();
     unsigned int GetCachedSize();
     void WriteRow(const std::vector<std::string> &);
 };
