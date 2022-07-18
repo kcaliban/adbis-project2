@@ -46,7 +46,6 @@ unsigned int CSVWriter::GetCachedSize() {
     return size;
 }
 
-
 void CSVWriter::WriteRow(const std::vector<std::string> &row) {
     std::string rowString;
     for (const auto & column : row) {

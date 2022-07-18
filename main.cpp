@@ -3,8 +3,8 @@
 #include <string>
 #include <unordered_map>
 #include <filesystem>
-#include "HashJoin.h"
-#include "CSVWriter.h"
+#include "src/HashJoin.h"
+#include "src/CSVWriter.h"
 #include <cmath>
 
 std::string replaceString(std::string subject,
@@ -66,59 +66,60 @@ void getPartitionTablesFromRDF(const std::string& fileName, const std::string& o
     }
 }
 
-
-/*
 int process100k() {
     // 4 GB Cache size
-    unsigned int cacheSize = pow(2, 35);
+    unsigned int cacheSize = 2 * pow(2, 30);
+    // 4 GB Hashmap size
+    unsigned int hashMapSize = 2 * pow(2, 30);
 
     getPartitionTablesFromRDF("100k.txt", "100k", cacheSize);
 
-    auto followsRelationFileName = "wsdbm:follows.csv";
+    auto followsRelationFileName = "wsdbm_follows.csv";
     auto followsRelationPath = std::filesystem::path("100k") / std::filesystem::path(followsRelationFileName);
     auto followsRelation = new CSVReader(followsRelationPath, ',', "follows");
 
-    auto friendOfRelationFileName = "wsdbm:friendOf.csv";
+    auto friendOfRelationFileName = "wsdbm_friendOf.csv";
     auto friendOfRelationPath = std::filesystem::path("100k") / std::filesystem::path( friendOfRelationFileName);
     auto friendOfRelation = new CSVReader(friendOfRelationPath, ',', "friendOf");
 
-    auto likesRelationFileName = "wsdbm:likes.csv";
+    auto likesRelationFileName = "wsdbm_likes.csv";
     auto likesRelationPath = std::filesystem::path("100k") / std::filesystem::path(likesRelationFileName);
     auto likesRelation = new CSVReader(likesRelationPath, ',', "likes");
 
-    auto hasReviewFileName = "rev:hasReview.csv";
+    auto hasReviewFileName = "rev_hasReview.csv";
     auto hasReviewPath = std::filesystem::path("100k") / std::filesystem::path(hasReviewFileName);
     auto hasReviewRelation = new CSVReader(hasReviewPath, ',', "hasReview");
 
-    // follows JOIN friendOf
-    auto outputFileName = "follows_friendOf.csv";
+    // hasReview JOIN likes
+    auto outputFileName = "hasReview_likes.csv";
     auto outputFilePath = std::filesystem::path("100k") / std::filesystem::path(outputFileName);
-    HashJoin hashJoin = HashJoin();
-    hashJoin.Join(followsRelation, "Object", friendOfRelation, "Subject", outputFilePath, cacheSize);
-    auto follows_friendOf = new CSVReader(outputFilePath, ',', "follows_friendOf");
-    hashJoin.Reset();
+    auto hashJoin = new HashJoin(hasReviewRelation, "Subject", likesRelation, "Object", outputFilePath, cacheSize);
+    hashJoin->Join(hashMapSize);
+    auto hasReview_likes = new CSVReader(outputFilePath, ',', "hasReview_likes");
+    delete hashJoin;
 
-    // JOIN likes
-    outputFileName = "follows_friendOf_likes.csv";
+    // JOIN friendOf
+    outputFileName = "hasReview_likes_friendOf.csv";
     outputFilePath = std::filesystem::path("100k") / std::filesystem::path(outputFileName);
-    hashJoin.Join(follows_friendOf, "Object", likesRelation, "Subject", outputFilePath, cacheSize);
-    auto follows_friendOf_likes = new CSVReader(outputFilePath, ',', "follows_friendOf_likes");
-    hashJoin.Reset();
+    hashJoin = new HashJoin(hasReview_likes, "Subject", friendOfRelation, "Object", outputFilePath, cacheSize);
+    hashJoin->Join(hashMapSize);
+    auto hasReview_likes_friendOf = new CSVReader(outputFilePath, ',', "hasReview_likes_friendOf");
+    delete hashJoin;
 
-    // JOIN hasReview
-    outputFileName = "follows_friendOf_likes_hasReview.csv";
+    // JOIN follows
+    outputFileName = "hasReview_likes_friendOf_follows.csv";
     outputFilePath = std::filesystem::path("100k") / std::filesystem::path(outputFileName);
-    hashJoin.Join(follows_friendOf_likes, "Object", hasReviewRelation, "Subject", outputFilePath, cacheSize);
-    auto follows_friendOf_likes_hasReview = new CSVReader(outputFilePath, ',', "follows_friendOf_likes");
-    hashJoin.Reset();
+    hashJoin = new HashJoin(hasReview_likes_friendOf, "Subject", followsRelation, "Object", outputFilePath, cacheSize);
+    hashJoin->Join(hashMapSize);
+    auto hasReview_likes_friendOf_follows = new CSVReader(outputFilePath, ',', "hasReview_likes_friendOf_follows");
+    delete hashJoin;
 }
- */
 
 int processWatdiv10M() {
     // 4GB
-    unsigned int cacheSize = 2 * pow(2, 30);
+    unsigned int cacheSize = 4 * pow(2, 30);
     // 4GB
-    unsigned int hashMapSize = 2 * pow(2, 30);
+    unsigned int hashMapSize = 4 * pow(2, 30);
 
     getPartitionTablesFromRDF("watdiv.10M.nt", "watdiv_10M_nt", cacheSize);
 
@@ -163,12 +164,9 @@ int processWatdiv10M() {
     delete hashJoin;
 }
 
-
-
-
 int main() {
-    //process100k();
-    processWatdiv10M();
+    process100k();
+    // processWatdiv10M();
 
     return 0;
 }

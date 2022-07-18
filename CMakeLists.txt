@@ -4,6 +4,12 @@ project(project2)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-configure_file(100k.txt 100k.txt COPYONLY)
-configure_file(watdiv.10M.nt watdiv.10M.nt COPYONLY)
-add_executable(project2 main.cpp HashJoin.h CSVReader.cpp CSVReader.h CSVWriter.cpp CSVWriter.h HashJoin.cpp)
+set(SOURCE main.cpp)
+add_executable(project2_run ${SOURCE})
+
+include_directories(src)
+
+add_subdirectory(src)
+add_subdirectory(test)
+
+target_link_libraries(project2_run project2)
