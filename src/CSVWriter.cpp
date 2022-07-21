@@ -28,6 +28,11 @@ void CSVWriter::WriteNextRow(const std::vector<std::string> &row) {
     cachedRows.push_back(row);
 }
 
+void CSVWriter::WriteRows(const std::vector<std::vector<std::string>> & rows) {
+    for (const auto & row : rows)
+        WriteRow(row);
+}
+
 void CSVWriter::FlushCache() {
     for (const auto & row : cachedRows)
         WriteRow(row);

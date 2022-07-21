@@ -5,6 +5,7 @@
 #include <filesystem>
 #include "src/HashJoin.h"
 #include "src/CSVWriter.h"
+#include "src/ExternalSort.h"
 #include <cmath>
 
 std::string replaceString(std::string subject,
@@ -186,8 +187,25 @@ int processWatdiv10M() {
 }
 
 int main() {
-    process100k();
+    // process100k();
     // processWatdiv10M();
+
+    unsigned int cacheSize = 70 * pow(2, 10);
+    std::filesystem::path outputDir = "100k";
+    std::filesystem::path tempDir = outputDir / "tmp";
+
+    getPartitionTablesFromRDF("100k.txt", outputDir, cacheSize);
+
+    std::filesystem::create_directories(tempDir);
+
+    auto followsRelationFileName = "wsdbm_follows.csv";
+    auto followsRelationPath = std::filesystem::path("100k") / std::filesystem::path(followsRelationFileName);
+    std::ifstream followsRelationStream(followsRelationPath);
+    auto followsRelation = new CSVReader(&followsRelationStream, ',', "follows");
+
+    std::filesystem::path sortedOutputDir = outputDir / "follows_sorted.csv";
+    ExternalSort externalSort(followsRelation, "Object", cacheSize, tempDir, sortedOutputDir);
+    externalSort.Sort();
 
     return 0;
 }

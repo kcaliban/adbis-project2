@@ -19,6 +19,7 @@ public:
         std::vector<std::vector<std::string>>().swap(cachedRows);
     }
     void FlushCache();
+    void WriteRows(const std::vector<std::vector<std::string>> & rows);
 private:
     std::ostream * ostream;
     std::vector<std::vector<std::string>> cachedRows;
