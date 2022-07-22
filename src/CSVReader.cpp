@@ -34,16 +34,13 @@ void CSVReader::JumpToBegin() {
     this->GetNextRow();
 }
 
-std::vector<std::vector<std::string>> CSVReader::GetAllRows() {
-    std::vector<std::vector<std::string>> output;
-
-    auto row = this->GetNextRow();
-    while (!row.empty()) {
-        output.push_back(row);
-        row = this->GetNextRow();
-    }
-
-    return output;
+unsigned int CSVReader::GetNumberOfRows() {
+    unsigned int result = 0;
+    std::string row;
+    while (std::getline(*istream, row))
+        result++;
+    JumpToBegin();
+    return result;
 }
 
 

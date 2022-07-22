@@ -22,7 +22,7 @@ public:
     std::vector<std::string> columnNames;
     std::string tableName;
     virtual ~CSVReader() = default;
-    std::vector<std::vector<std::string>> GetAllRows();
+    unsigned int GetNumberOfRows();
 private:
     std::istream * istream;
 

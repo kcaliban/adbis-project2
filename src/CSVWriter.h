@@ -20,11 +20,13 @@ public:
     }
     void FlushCache();
     void WriteRows(const std::vector<std::vector<std::string>> & rows);
+    unsigned int getRowsWritten() const;
 private:
     std::ostream * ostream;
     std::vector<std::vector<std::string>> cachedRows;
     char delim;
     unsigned int cacheSize;
+    unsigned int rowsWritten;
     unsigned int GetCachedSize();
     void WriteRow(const std::vector<std::string> &);
 };

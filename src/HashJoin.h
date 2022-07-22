@@ -18,8 +18,9 @@ class HashJoin {
 public:
     explicit HashJoin(CSVReader * A, const std::string& columnA,
                       CSVReader * B, const std::string& columnB,
-                      std::ostream * ostream, unsigned int cacheSize);
-    void Join(unsigned int hashTableSize);
+                      std::ostream * ostream, unsigned int cacheSize,
+                      unsigned int hashTableSize);
+    void Join();
     virtual ~HashJoin() {
         delete output;
     }
@@ -30,6 +31,7 @@ private:
     std::string columnB;
     std::ostream * ostream;
     unsigned int cacheSize;
+    unsigned int hashTableSize;
     CSVReader * A;
     CSVReader * B;
     CSVWriter * output;

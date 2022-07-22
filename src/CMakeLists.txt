@@ -5,4 +5,4 @@ add_library(project2
         CSVReader.h
         HashJoin.cpp
         HashJoin.h
-        SortMergeJoin.cpp SortMergeJoin.h ExternalSort.cpp ExternalSort.h)
+        SortMergeJoin.cpp SortMergeJoin.h ExternalSort.cpp ExternalSort.h RDFReader.cpp RDFReader.h)

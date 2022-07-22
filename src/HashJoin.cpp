@@ -5,13 +5,14 @@
 #include "HashJoin.h"
 
 HashJoin::HashJoin(CSVReader *A, const std::string &columnA, CSVReader *B, const std::string &columnB,
-                   std::ostream *ostream, unsigned int cacheSize) {
+                   std::ostream *ostream, unsigned int cacheSize, unsigned int hashTableSize) {
     this->A = A;
     this->columnA = columnA;
     this->B = B;
     this->columnB = columnB;
     this->ostream = ostream;
     this->cacheSize = cacheSize;
+    this->hashTableSize = hashTableSize;
 
     InitializeIndices();
     InitializeOutput();
@@ -21,7 +22,7 @@ unsigned int HashJoin::GetHashTableSize() {
     // Approximate
     if (hashMap.empty()) return 0;
 
-    auto rows = hashMap.begin()->second;
+    const auto & rows = hashMap.begin()->second;
     size_t size = hashMap.size() * (sizeof(rows) + rows.size() * (
             sizeof(rows[0]) + rows[0].size() * (
                     sizeof(rows[0][0]) + rows[0][0].length()
@@ -31,8 +32,8 @@ unsigned int HashJoin::GetHashTableSize() {
     return size;
 }
 
-void HashJoin::Join(unsigned int hashTableSize)  {
-    std::cout << "BUILDING" << std::endl;
+void HashJoin::Join()  {
+    std::cout << "\tBUILDING" << std::endl;
 
     auto row = A->GetNextRow();
 
@@ -49,7 +50,7 @@ void HashJoin::Join(unsigned int hashTableSize)  {
         if (GetHashTableSize() > hashTableSize) {
             Probe();
             hashMap.clear();
-            std::cout << "BUILDING" << std::endl;
+            std::cout << "\tBUILDING" << std::endl;
         }
 
         row = A->GetNextRow();
@@ -57,6 +58,7 @@ void HashJoin::Join(unsigned int hashTableSize)  {
 
     Probe();
     output->FlushCache();
+    std::cout << "\tROWS WRITTEN: " << output->getRowsWritten() << std::endl;
 }
 
 void HashJoin::InitializeOutput() {
@@ -94,7 +96,7 @@ void HashJoin::InitializeIndices() {
 }
 
 void HashJoin::Probe() {
-    std::cout << "PROBING" << std::endl;
+    std::cout << "\tPROBING" << std::endl;
 
     B->JumpToBegin();
     auto row = B->GetNextRow();

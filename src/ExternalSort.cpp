@@ -16,7 +16,6 @@ ExternalSort::ExternalSort(CSVReader *A, const std::string & column,
     this->tempDir = tempDir;
     this->outputFilePath = outputFilePath;
 
-
     for (int i = 0; i < A->columnNames.size(); i++) {
         if (A->columnNames[i] == column)
             columnIndex = i;
@@ -48,8 +47,16 @@ void ExternalSort::CreateAndSortChunks() {
         row = A->GetNextRow();
     }
 
-    if (cache.size() > 0)
+    if (!cache.empty()) {
+        std::sort(cache.begin(), cache.end(),
+                  [this](std::vector<std::string> a,
+                         std::vector<std::string> b) {
+                      return a[columnIndex] < b[columnIndex];
+        });
         WriteCacheToNewFile();
+        cache.clear();
+    }
+    cache.shrink_to_fit();
 }
 
 unsigned int ExternalSort::GetCachedSize() {
@@ -69,7 +76,7 @@ void ExternalSort::WriteCacheToNewFile() {
     std::filesystem::path output = tempDir / outputFileName;
     std::ofstream ofstream(output);
 
-    CSVWriter writer(&ofstream, A->columnNames, ',', 0);
+    CSVWriter writer(&ofstream, A->columnNames, ',', cacheSize);
     for (const auto & row : cache) {
         writer.WriteNextRow(row);
     }
@@ -116,13 +123,10 @@ void ExternalSort::KWayMergeSort() {
             newTempFiles.emplace_back(mergedFileName);
         }
 
-        std::cout << "-------------------------------------" << std::endl;
         for (const auto & tmpFile : tempFiles) {
-            std::cout << tmpFile << " ";
             std::filesystem::path filePath = tempDir / tmpFile;
             std::filesystem::remove(filePath);
         }
-        std::cout << std::endl;
 
         // Set tempFiles = newTempFiles
         tempFiles = newTempFiles;
@@ -130,7 +134,6 @@ void ExternalSort::KWayMergeSort() {
 
     // Move file
     std::filesystem::rename(tempDir / tempFiles[0], outputFilePath);
-
 }
 
 void ExternalSort::MergeSort(const std::string& a, const std::string& b, const std::string& outputFile) {
