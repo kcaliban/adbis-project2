@@ -8,7 +8,8 @@
 #include <iostream>
 
 SortMergeJoin::SortMergeJoin(CSVReader *A, const std::string &columnA, CSVReader *B,
-                             const std::string &columnB, std::ostream *ostream, unsigned int cacheSize,
+                             const std::string &columnB, std::ostream *ostream,
+                             unsigned long long cacheSize,
                              std::filesystem::path tempDir) {
     this->A = A;
     this->B = B;

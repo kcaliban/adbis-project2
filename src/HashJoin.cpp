@@ -5,7 +5,7 @@
 #include "HashJoin.h"
 
 HashJoin::HashJoin(CSVReader *A, const std::string &columnA, CSVReader *B, const std::string &columnB,
-                   std::ostream *ostream, unsigned int cacheSize, unsigned int hashTableSize) {
+                   std::ostream *ostream, unsigned long long cacheSize, unsigned long long hashTableSize) {
     this->A = A;
     this->columnA = columnA;
     this->B = B;
@@ -18,12 +18,12 @@ HashJoin::HashJoin(CSVReader *A, const std::string &columnA, CSVReader *B, const
     InitializeOutput();
 }
 
-unsigned int HashJoin::GetHashTableSize() {
+unsigned long long HashJoin::GetHashTableSize() {
     // Approximate
     if (hashMap.empty()) return 0;
 
     const auto & rows = hashMap.begin()->second;
-    size_t size = hashMap.size() * (sizeof(rows) + rows.size() * (
+    unsigned long long size = hashMap.size() * (sizeof(rows) + rows.size() * (
             sizeof(rows[0]) + rows[0].size() * (
                     sizeof(rows[0][0]) + rows[0][0].length()
             )

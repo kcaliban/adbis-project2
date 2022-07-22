@@ -12,12 +12,13 @@
 
 class ExternalSort {
 public:
-    ExternalSort(CSVReader *A, const std::string &column, size_t cacheSize, const std::filesystem::path &tempDir,
+    ExternalSort(CSVReader *A, const std::string &column, unsigned long long cacheSize,
+                 const std::filesystem::path &tempDir,
                  const std::filesystem::path &outputFilePath);
 
     void Sort();
 private:
-    size_t cacheSize;
+    unsigned long long cacheSize;
     unsigned int columnIndex;
     std::vector<std::vector<std::string>> cache;
     CSVReader * A;
@@ -25,7 +26,7 @@ private:
     std::filesystem::path tempDir;
     std::filesystem::path outputFilePath;
 
-    unsigned int GetCachedSize();
+    unsigned long long GetCachedSize();
     void WriteCacheToNewFile();
     void CreateAndSortChunks();
     void KWayMergeSort();

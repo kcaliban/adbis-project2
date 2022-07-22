@@ -24,7 +24,7 @@ RDFReader::RDFReader(const std::filesystem::path & file) {
     this->file = file;
 }
 
-std::vector<std::string> RDFReader::ToPartitionedCSV(const std::filesystem::path & outputDir, unsigned int cacheSize) {
+std::vector<std::string> RDFReader::ToPartitionedCSV(const std::filesystem::path & outputDir, unsigned long long cacheSize) {
     std::filesystem::create_directories(outputDir);
 
     std::vector<std::string> output;

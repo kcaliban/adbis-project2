@@ -21,7 +21,7 @@ std::pair<CSVReader *, std::ifstream *> getCSVReader(const std::string& outputDi
 
 std::pair<CSVReader *, std::fstream *> hashJoin(CSVReader * A, CSVReader * B, const std::string & columnA,
                                                 const std::string & columnB, const std::string & outputDir,
-                                                unsigned int cacheSize, unsigned int hashTableSize) {
+                                                unsigned long long cacheSize, unsigned long long hashTableSize) {
     auto tableName = A->tableName + "_" + B->tableName;
     auto outputFileName = tableName + ".csv";
     auto outputFilePath = outputDir / std::filesystem::path(outputFileName);
@@ -39,7 +39,7 @@ std::pair<CSVReader *, std::fstream *> hashJoin(CSVReader * A, CSVReader * B, co
 
 std::pair<CSVReader *, std::fstream *> sortMergeJoin(CSVReader * A, CSVReader * B, const std::string & columnA,
                                                      const std::string & columnB, const std::string & outputDir,
-                                                     unsigned int cacheSize, const std::string & tempDir) {
+                                                     unsigned long long cacheSize, const std::string & tempDir) {
     auto tableName = A->tableName + "_" + B->tableName;
     auto outputFileName = tableName + ".csv";
     auto outputFilePath = outputDir / std::filesystem::path(outputFileName);
@@ -54,8 +54,8 @@ std::pair<CSVReader *, std::fstream *> sortMergeJoin(CSVReader * A, CSVReader * 
 }
 
 int process100k() {
-    unsigned int cacheSize = 2 * pow(2, 30);
-    unsigned int hashMapSize = 2 * pow(2, 30);
+    unsigned long long cacheSize = 2 * pow(2, 30);
+    unsigned long long hashMapSize = 2 * pow(2, 30);
 
     const auto inputFile = "100k.txt";
     const auto outputDir = "100k";
@@ -109,8 +109,8 @@ int process100k() {
 
 int processWatdiv10M() {
     // 2GB
-    unsigned int cacheSize = 2 * pow(2, 30);
-    unsigned int hashMapSize = 2 * pow(2, 30);
+    unsigned long long cacheSize = 2 * pow(2, 30);
+    unsigned long long hashMapSize = 2 * pow(2, 30);
 
     const auto inputFile = "watdiv.10M.nt";
     const auto outputDir = "watdiv_10M_nt";

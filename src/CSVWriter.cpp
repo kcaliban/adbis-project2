@@ -7,7 +7,7 @@
 #include <cmath>
 
 CSVWriter::CSVWriter(std::ostream * ostream, const std::vector<std::string> &columnNames,
-                     const char & delim, unsigned int cacheSize) {
+                     const char & delim, unsigned long long cacheSize) {
     this->ostream = ostream;
     std::string headerRow;
     for (const auto & column : columnNames) {
@@ -53,10 +53,10 @@ void CSVWriter::FlushCache() {
     cachedRows.clear();
 }
 
-unsigned int CSVWriter::GetCachedSize() {
+double CSVWriter::GetCachedSize() {
     if (cachedRows.empty()) return 0;
     // This is just an approximation. String size varies per row and column entry.
-    size_t size = sizeof(cachedRows) + cachedRows.size() * (
+    double size = sizeof(cachedRows) + cachedRows.size() * (
                     sizeof(cachedRows[0]) + cachedRows[0].size() * (
                         sizeof(cachedRows[0][0]) + cachedRows[0][0].length()
                 )

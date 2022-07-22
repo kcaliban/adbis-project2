@@ -14,7 +14,7 @@ class SortMergeJoin {
 public:
     explicit SortMergeJoin(CSVReader * A, const std::string& columnA,
                            CSVReader * B, const std::string& columnB,
-                           std::ostream * ostream, unsigned int cacheSize,
+                           std::ostream * ostream, unsigned long long cacheSize,
                            std::filesystem::path tempDir);
     void Join();
     virtual ~SortMergeJoin() {
@@ -37,7 +37,7 @@ private:
     std::ostream * ostream;
     std::istream * istreamA;
     std::istream * istreamB;
-    unsigned int cacheSize;
+    unsigned long long cacheSize;
     std::filesystem::path tempDir;
 
     void Sort();

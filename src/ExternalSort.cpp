@@ -9,7 +9,7 @@
 #include <iostream>
 
 ExternalSort::ExternalSort(CSVReader *A, const std::string & column,
-                           size_t cacheSize, const std::filesystem::path & tempDir,
+                           unsigned long long cacheSize, const std::filesystem::path & tempDir,
                            const std::filesystem::path & outputFilePath) {
     this->A = A;
     this->cacheSize = cacheSize;
@@ -59,10 +59,10 @@ void ExternalSort::CreateAndSortChunks() {
     cache.shrink_to_fit();
 }
 
-unsigned int ExternalSort::GetCachedSize() {
+unsigned long long ExternalSort::GetCachedSize() {
     if (cache.empty()) return 0;
     // This is just an approximation. String size varies per row and column entry.
-    size_t size = sizeof(cache) + cache.size() * (
+    unsigned long long size = sizeof(cache) + cache.size() * (
             sizeof(cache[0]) + cache[0].size() * (
                     sizeof(cache[0][0]) + cache[0][0].length()
             )
