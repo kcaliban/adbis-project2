@@ -84,6 +84,12 @@ int process100k() {
     likes.first->JumpToBegin();
     hasReview.first->JumpToBegin();
 
+    // Delete temporary dir and merging results
+    std::filesystem::remove_all(tempDir);
+    std::filesystem::remove(outputDir / std::filesystem::path(follows.first->tableName + "_" + friendOf.first->tableName + ".csv"));
+    std::filesystem::remove(outputDir / std::filesystem::path(firstSMJ.first->tableName + "_" + likes.first->tableName + ".csv"));
+    std::filesystem::remove(outputDir / std::filesystem::path(secondSMJ.first->tableName + "_" +  hasReview.first->tableName + ".csv"));
+
     auto starthashJoin = std::chrono::steady_clock::now();
     std::cout << "follows JOIN friendOf" << std::endl;
     auto firstHashJoin = hashJoin(follows.first, friendOf.first, "Object", "Subject", outputDir, cacheSize, hashMapSize);
@@ -97,12 +103,8 @@ int process100k() {
     std::cout << "\tSortMergeJoin " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoin - startSortMergeJoin).count() << "[ms]" << std::endl;
     std::cout << "\tHashJoin " << std::chrono::duration_cast<std::chrono::milliseconds>(endhashJoin - starthashJoin).count() << "[ms]" << std::endl;
 
-
-    /*
-    auto first = hashJoin(follows.first, friendOf.first, "Object", "Subject", outputDir, cacheSize, hashMapSize);
-    auto second = hashJoin(first.first, likes.first, "Object", "Subject", outputDir, cacheSize, hashMapSize);
-    auto third = hashJoin(second.first, hasReview.first, "Object", "Subject", outputDir, cacheSize, hashMapSize);
-    */
+    // Delete all
+    std::filesystem::remove_all(outputDir);
 }
 
 int processWatdiv10M() {
@@ -134,12 +136,17 @@ int processWatdiv10M() {
     std::cout << "BENCHMARK RESULTS: " << std::endl;
     std::cout << "\tSortMergeJoin " << std::chrono::duration_cast<std::chrono::minutes>(endSortMergeJoin - startSortMergeJoin).count() << "[m]" << std::endl;
 
-    /*
     // Reset readers
     follows.first->JumpToBegin();
     friendOf.first->JumpToBegin();
     likes.first->JumpToBegin();
     hasReview.first->JumpToBegin();
+
+    // Delete temporary dir and merging results
+    std::filesystem::remove_all(tempDir);
+    std::filesystem::remove(outputDir / std::filesystem::path(follows.first->tableName + "_" + friendOf.first->tableName + ".csv"));
+    std::filesystem::remove(outputDir / std::filesystem::path(firstSMJ.first->tableName + "_" + likes.first->tableName + ".csv"));
+    std::filesystem::remove(outputDir / std::filesystem::path(secondSMJ.first->tableName + "_" +  hasReview.first->tableName + ".csv"));
 
     auto starthashJoin = std::chrono::steady_clock::now();
     std::cout << "follows JOIN friendOf" << std::endl;
@@ -154,48 +161,11 @@ int processWatdiv10M() {
     std::cout << "\tSortMergeJoin " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoin - startSortMergeJoin).count() << "[ms]" << std::endl;
     std::cout << "\tHashJoin " << std::chrono::duration_cast<std::chrono::milliseconds>(endhashJoin - starthashJoin).count() << "[ms]" << std::endl;
 
-     */
+    // Delete all
+    std::filesystem::remove_all(outputDir);
 }
 
 int main() {
-
-    // process100k();
-    processWatdiv10M();
-    /*
-    unsigned int cacheSize = 70 * pow(2, 10);
-    std::filesystem::path outputDir = "100k";
-    std::filesystem::path tempDir = outputDir / "tmp";
-
-    // getPartitionTablesFromRDF("100k.txt", outputDir, cacheSize);
-    RDFReader("100k.txt").ToPartitionedCSV("100k", cacheSize);
-
-    std::filesystem::create_directories(tempDir);
-
-    auto followsRelationFileName = "wsdbm_follows.csv";
-    auto followsRelationPath = std::filesystem::path("100k") / std::filesystem::path(followsRelationFileName);
-    std::ifstream followsRelationStream(followsRelationPath);
-    auto followsRelation = new CSVReader(&followsRelationStream, ',', "follows");
-
-    auto friendOfRelationFileName = "wsdbm_friendOf.csv";
-    auto friendOfRelationPath = std::filesystem::path("100k") / std::filesystem::path( friendOfRelationFileName);
-    std::ifstream friendOfRelationStream(friendOfRelationPath);
-    auto friendOfRelation = new CSVReader(&friendOfRelationStream, ',', "friendOf");
-
-    std::ofstream outputFile(outputDir / "follows_friendof.csv");
-    SortMergeJoin sortMergeJoin(followsRelation, "Object", friendOfRelation, "Subject", &outputFile, cacheSize, tempDir);
-    sortMergeJoin.Join();
-
-    return 0;
-    */
- }
-
-/*
-    // Determine order of join (make sure that smaller ones are used for HashMap)
-    std::vector<int> indices;
-    for (int i = 0; i < tables.size(); i++)
-        indices.push_back(i);
-
-    std::sort(indices.begin(), indices.end(), [tables] (int i, int j) {
-        return tables[i]->GetNumberOfRows() < tables[j]->GetNumberOfRows();
-    });
-*/
+    process100k();
+    // processWatdiv10M();
+}
