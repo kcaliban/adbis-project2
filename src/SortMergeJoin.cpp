@@ -41,13 +41,27 @@ void SortMergeJoin::InitializeOutput() {
     // Left over column names from A, Name from A + Name from B, Left over column names from B
     for (int i = 0; i < columnNamesA.size(); i++) {
         if (i != columnAIndex) {
-            columns.push_back(columnNamesA[i]);
+            // If name already contains the name of a table, don't add another one
+            std::string tmp = columnNamesA[i];
+            if (tmp.find('.') != std::string::npos)
+                columns.push_back(columnNamesA[i]);
+            else
+                columns.push_back(A->tableName + "." + columnNamesA[i]);
         }
     }
-    columns.push_back(A->tableName + "_" + B->tableName);
+
+    if (A->columnNames[columnAIndex].find('.') != std::string::npos)
+        columns.push_back(A->columnNames[columnAIndex]);
+    else
+        columns.push_back(A->tableName + "." + A->columnNames[columnAIndex]);
+
     for (auto const & col : columnNamesB) {
         if (col != columnB) {
-            columns.push_back(col);
+            // If name already contains the name of a table, don't add another one
+            if (col.find('.') != std::string::npos)
+                columns.push_back(col);
+            else
+                columns.push_back(B->tableName + "." + col);
         }
     }
 

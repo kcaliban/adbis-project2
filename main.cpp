@@ -29,7 +29,6 @@ std::pair<CSVReader *, std::fstream *> hashJoin(CSVReader * A, CSVReader * B, co
     HashJoin hashJoin(A, columnA, B, columnB,
                       fstream, cacheSize, hashTableSize);
     hashJoin.Join();
-    std::cout << outputFilePath << std::endl;
     fstream->seekg(0, std::ios::beg);
     return std::make_pair(
             new CSVReader(fstream, ',', tableName),
@@ -54,8 +53,8 @@ std::pair<CSVReader *, std::fstream *> sortMergeJoin(CSVReader * A, CSVReader * 
 }
 
 int process100k() {
-    unsigned long long cacheSize = 2 * pow(2, 30);
-    unsigned long long hashMapSize = 2 * pow(2, 30);
+    unsigned long long cacheSize = 8 * pow(2, 30);
+    unsigned long long hashMapSize = 8 * pow(2, 30);
 
     const auto inputFile = "100k.txt";
     const auto outputDir = "100k";
@@ -73,9 +72,9 @@ int process100k() {
     std::cout << "follows JOIN friendOf" << std::endl;
     auto firstSMJ = sortMergeJoin(follows.first, friendOf.first, "Object", "Subject", outputDir, cacheSize, tempDir);
     std::cout << "JOIN likes" << std::endl;
-    auto secondSMJ = sortMergeJoin(firstSMJ.first, likes.first, "Object", "Subject", outputDir, cacheSize, tempDir);
+    auto secondSMJ = sortMergeJoin(firstSMJ.first, likes.first, "friendOf.Object", "Subject", outputDir, cacheSize, tempDir);
     std::cout << "JOIN hasReview" << std::endl;
-    sortMergeJoin(secondSMJ.first, hasReview.first, "Object", "Subject", outputDir, cacheSize, tempDir);
+    sortMergeJoin(secondSMJ.first, hasReview.first, "likes.Object", "Subject", outputDir, cacheSize, tempDir);
     auto endSortMergeJoin = std::chrono::steady_clock::now();
 
     // Reset readers
@@ -94,9 +93,9 @@ int process100k() {
     std::cout << "follows JOIN friendOf" << std::endl;
     auto firstHashJoin = hashJoin(follows.first, friendOf.first, "Object", "Subject", outputDir, cacheSize, hashMapSize);
     std::cout << "JOIN likes" << std::endl;
-    auto secondHashJoin = hashJoin(firstHashJoin.first, likes.first, "Object", "Subject", outputDir, cacheSize, hashMapSize);
+    auto secondHashJoin = hashJoin(firstHashJoin.first, likes.first, "friendOf.Object", "Subject", outputDir, cacheSize, hashMapSize);
     std::cout << "JOIN hasReview" << std::endl;
-    hashJoin(secondHashJoin.first, hasReview.first, "Object", "Subject", outputDir, cacheSize, hashMapSize);
+    hashJoin(secondHashJoin.first, hasReview.first, "likes.Object", "Subject", outputDir, cacheSize, hashMapSize);
     auto endhashJoin = std::chrono::steady_clock::now();
 
     std::cout << "BENCHMARK RESULTS: " << std::endl;
@@ -108,9 +107,8 @@ int process100k() {
 }
 
 int processWatdiv10M() {
-    // 2GB
-    unsigned long long cacheSize = 2 * pow(2, 30);
-    unsigned long long hashMapSize = 2 * pow(2, 30);
+    unsigned long long cacheSize = 8 * pow(2, 30);
+    unsigned long long hashMapSize = 8 * pow(2, 30);
 
     const auto inputFile = "watdiv.10M.nt";
     const auto outputDir = "watdiv_10M_nt";

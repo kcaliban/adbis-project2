@@ -21,25 +21,19 @@ CSVWriter::CSVWriter(std::ostream * ostream, const std::vector<std::string> &col
     this->cacheSize = cacheSize;
     this->rowsWritten = 0;
 
-    /*
     size_t averageColumnSize = 30;
     size_t reservedSize = cacheSize /
                 (sizeof(std::vector<std::string>) + sizeof(std::string) * columnNames.size() * averageColumnSize);
     this->cachedRows.reserve(round(reservedSize));
-     */
 }
 
 void CSVWriter::WriteNextRow(const std::vector<std::string> &row) {
-    WriteRow(row);
-    /*
     auto cachedSize = GetCachedSize();
-    // std::cout << "CachedSize: " << cachedSize << std::endl;
     if (cachedSize > cacheSize) {
         FlushCache();
     }
 
     cachedRows.push_back(row);
-     */
 }
 
 void CSVWriter::WriteRows(const std::vector<std::vector<std::string>> & rows) {
