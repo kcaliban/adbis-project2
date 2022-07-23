@@ -23,51 +23,62 @@ ExternalSort::ExternalSort(CSVReader *A, const std::string & column,
 }
 
 void ExternalSort::Sort() {
+    std::cout << "\t\t\tCREATE AND SORT CHUNKS" << std::endl;
     CreateAndSortChunks();
+    std::cout << "\t\t\tMERGE CHUNKS" << std::endl;
     KWayMergeSort();
+}
+
+void ExternalSort::ClearCache() {
+    for (auto it : cache) {
+        delete it;
+    }
+    cache.clear();
+}
+
+void ExternalSort::SortCache() {
+    std::sort(cache.begin(), cache.end(),
+              [this](std::vector<unsigned long> * a,
+                     std::vector<unsigned long> * b) {
+                  return (*a)[columnIndex] < (*b)[columnIndex];
+    });
 }
 
 void ExternalSort::CreateAndSortChunks() {
     auto row = A->GetNextRow();
 
     while (!row.empty()) {
+        auto newRowPtr = new std::vector<unsigned long>(row);
         if (GetCachedSize() < cacheSize) {
-            cache.push_back(row);
+            cache.push_back(newRowPtr);
         } else {
-            cache.push_back(row);
-            std::sort(cache.begin(), cache.end(),
-                      [this](std::vector<std::string> a,
-                          std::vector<std::string> b) {
-                          return a[columnIndex] < b[columnIndex];
-                      });
-
+            cache.push_back(newRowPtr);
+            SortCache();
             WriteCacheToNewFile();
-            cache.clear();
+            ClearCache();
         }
         row = A->GetNextRow();
     }
 
     if (!cache.empty()) {
-        std::sort(cache.begin(), cache.end(),
-                  [this](std::vector<std::string> a,
-                         std::vector<std::string> b) {
-                      return a[columnIndex] < b[columnIndex];
-        });
+        SortCache();
         WriteCacheToNewFile();
-        cache.clear();
+        ClearCache();
     }
+
+    // Clear memory
     cache.shrink_to_fit();
 }
 
 unsigned long long ExternalSort::GetCachedSize() {
     if (cache.empty()) return 0;
-    // This is just an approximation. String size varies per row and column entry.
-    unsigned long long size = sizeof(cache) + cache.size() * (
-            sizeof(cache[0]) + cache[0].size() * (
-                    sizeof(cache[0][0]) + cache[0][0].length()
-            )
-    );
-
+    unsigned long long size = sizeof(std::vector<std::vector<unsigned long>*>) // Size of vector
+                             + ((unsigned long long) round(cache.size() * 1.5))
+                                * sizeof(std::vector<unsigned long>*) // Size of pointers
+                             + ((unsigned long long) round(cache.size() * 1.5))
+                                * sizeof(std::vector<unsigned long>) // Size of actual vectors
+                             + ((unsigned long long) round(cache.size() * 1.5))
+                                * sizeof(unsigned long) * A->columnNames.size(); // Size of rows
     return size;
 }
 
@@ -76,11 +87,10 @@ void ExternalSort::WriteCacheToNewFile() {
     std::filesystem::path output = tempDir / outputFileName;
     std::ofstream ofstream(output);
 
-    CSVWriter writer(&ofstream, A->columnNames, ',', cacheSize);
-    for (const auto & row : cache) {
-        writer.WriteNextRow(row);
+    CSVWriter writer(&ofstream, A->columnNames, ',');
+    for (const auto row : cache) {
+        writer.WriteNextRow(*row);
     }
-    writer.FlushCache();
 
     tempFiles.push_back(outputFileName);
 }
@@ -143,7 +153,7 @@ void ExternalSort::MergeSort(const std::string& a, const std::string& b, const s
 
     CSVReader readerA(&istreamA, ',', "a");
     CSVReader readerB(&istreamB, ',', "b");
-    CSVWriter writer(&ostream, A->columnNames, ',', cacheSize);
+    CSVWriter writer(&ostream, A->columnNames, ',');
 
     auto rowA = readerA.GetNextRow();
     auto rowB = readerB.GetNextRow();
@@ -172,9 +182,6 @@ void ExternalSort::MergeSort(const std::string& a, const std::string& b, const s
         writer.WriteNextRow(rowB);
         rowB = readerB.GetNextRow();
     }
-
-    // Flush
-    writer.FlushCache();
 }
 
 std::string ExternalSort::GetRandomString() {

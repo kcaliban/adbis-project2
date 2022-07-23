@@ -65,23 +65,29 @@ void SortMergeJoin::InitializeOutput() {
         }
     }
 
-    this->output = new CSVWriter(ostream, columns, ',', cacheSize);
+    this->output = new CSVWriter(ostream, columns, ',');
 }
 
 void SortMergeJoin::Sort() {
     std::string sortedAFileName = A->tableName + "_sorted";
     std::filesystem::path sortedAOutputPath = tempDir / sortedAFileName;
     ExternalSort externalSortA(A, columnA, cacheSize, tempDir, sortedAOutputPath);
+    std::cout << "\t\tSTART SORTING A" << std::endl;
     externalSortA.Sort();
     istreamA = new std::ifstream(sortedAOutputPath);
     sortedA = new CSVReader(istreamA, ',', sortedAFileName);
 
+    std::cout << "\t\tSORTED A" << std::endl;
+
     std::string sortedBFileName = B->tableName + "_sorted";
     std::filesystem::path sortedBOutputPath = tempDir / sortedBFileName;
     ExternalSort externalSortB(B, columnB, cacheSize, tempDir, sortedBOutputPath);
+    std::cout << "\t\tSTART SORTING B" << std::endl;
     externalSortB.Sort();
     istreamB = new std::ifstream(sortedBOutputPath);
     sortedB = new CSVReader(istreamB, ',', sortedBFileName);
+
+    std::cout << "\t\tSORTED B" << std::endl;
 }
 
 void SortMergeJoin::Join() {
@@ -89,7 +95,6 @@ void SortMergeJoin::Join() {
     Sort();
     std::cout << "\tMERGE" << std::endl;
     Merge();
-    output->FlushCache();
     std::cout << "\tROWS WRITTEN: " << output->getRowsWritten() << std::endl;
 }
 
@@ -112,11 +117,11 @@ void SortMergeJoin::Merge() {
     }
 }
 
-std::pair<std::vector<std::vector<std::string>>,std::vector<std::string>>
-    SortMergeJoin::Collect(CSVReader * reader,
-                           const std::vector<std::string> & row,
-                           unsigned int columnIndex) {
-    std::vector<std::vector<std::string>> result;
+std::pair<std::vector<std::vector<unsigned long>>,std::vector<unsigned long>>
+SortMergeJoin::Collect(CSVReader * reader,
+                       const std::vector<unsigned long> & row,
+                       unsigned int columnIndex) {
+    std::vector<std::vector<unsigned long>> result;
     result.push_back(row);
 
     const auto & columnValue = row[columnIndex];
@@ -134,11 +139,11 @@ std::pair<std::vector<std::vector<std::string>>,std::vector<std::string>>
     return std::make_pair(result, nextRow);
 }
 
-void SortMergeJoin::CartesianProduct(const std::vector<std::vector<std::string>> & a,
-                                     const std::vector<std::vector<std::string>> & b) {
+void SortMergeJoin::CartesianProduct(const std::vector<std::vector<unsigned long>> & a,
+                                     const std::vector<std::vector<unsigned long>> & b) {
     for (const auto & rowA : a) {
         for (const auto & rowB : b) {
-            std::vector<std::string> newRow;
+            std::vector<unsigned long> newRow;
 
             for (int i = 0; i < rowA.size(); i++) {
                 if (i == columnAIndex) continue;

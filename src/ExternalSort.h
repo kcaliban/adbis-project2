@@ -20,7 +20,7 @@ public:
 private:
     unsigned long long cacheSize;
     unsigned int columnIndex;
-    std::vector<std::vector<std::string>> cache;
+    std::vector<std::vector<unsigned long>*> cache;
     CSVReader * A;
     std::vector<std::string> tempFiles;
     std::filesystem::path tempDir;
@@ -32,6 +32,8 @@ private:
     void KWayMergeSort();
     void MergeSort(const std::string& a, const std::string& b, const std::string& outputFile);
     std::string GetRandomString();
+    void ClearCache();
+    void SortCache();
 };
 
 

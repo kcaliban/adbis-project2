@@ -18,8 +18,7 @@ class HashJoin {
 public:
     explicit HashJoin(CSVReader * A, const std::string& columnA,
                       CSVReader * B, const std::string& columnB,
-                      std::ostream * ostream, unsigned long long cacheSize,
-                      unsigned long long hashTableSize);
+                      std::ostream * ostream, unsigned long long hashTableSize);
     void Join();
     virtual ~HashJoin() {
         delete output;
@@ -30,13 +29,13 @@ private:
     std::string columnA;
     std::string columnB;
     std::ostream * ostream;
-    unsigned long long cacheSize;
     unsigned long long hashTableSize;
     CSVReader * A;
     CSVReader * B;
     CSVWriter * output;
+    unsigned long long totalRowsInHashMap;
 
-    std::unordered_map<std::string, std::vector<std::vector<std::string>>> hashMap;
+    std::unordered_map<unsigned long, std::vector<std::vector<unsigned long>>* > hashMap;
 
     void InitializeIndices();
     void Probe();

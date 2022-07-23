@@ -12,7 +12,7 @@
 class RDFReader {
 public:
     explicit RDFReader(const std::filesystem::path & file);
-    std::vector<std::string> ToPartitionedCSV(const std::filesystem::path & outputDir, unsigned long long cacheSize);
+    std::vector<std::string> ToPartitionedCSV(const std::filesystem::path & outputDir);
 private:
     std::filesystem::path file;
 };

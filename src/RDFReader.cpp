@@ -24,8 +24,10 @@ RDFReader::RDFReader(const std::filesystem::path & file) {
     this->file = file;
 }
 
-std::vector<std::string> RDFReader::ToPartitionedCSV(const std::filesystem::path & outputDir, unsigned long long cacheSize) {
+std::vector<std::string> RDFReader::ToPartitionedCSV(const std::filesystem::path & outputDir) {
     std::filesystem::create_directories(outputDir);
+    std::unordered_map<std::string, unsigned long> columnToInt;
+    unsigned long long id = 0;
 
     std::vector<std::string> output;
 
@@ -59,13 +61,24 @@ std::vector<std::string> RDFReader::ToPartitionedCSV(const std::filesystem::path
                 auto outputFile = std::filesystem::path(outputDir) / std::filesystem::path(tableName + ".csv");
                 auto * ofstream = new std::ofstream(outputFile);
                 auto result = tables.insert(
-                        {tableName, new CSVWriter( ofstream, {"Subject", "Object"}, ',', cacheSize)}
+                        {tableName, new CSVWriter( ofstream, {"Subject", "Object"}, ',')}
                 );
                 it = result.first;
             }
-            auto sub = std::string(subject);
-            auto obj = std::string(object);
-            it->second->WriteNextRow({sub, obj});
+
+            auto itSub = columnToInt.find(subject);
+            if (itSub == columnToInt.end()) {
+                itSub = columnToInt.insert({subject, id}).first;
+                id++;
+            }
+
+            auto itObj = columnToInt.find(object);
+            if (itObj == columnToInt.end()) {
+                itObj = columnToInt.insert({object, id}).first;
+                id++;
+            }
+
+            it->second->WriteNextRow({itSub->second, itObj->second});
         }
     }
     ifstream.close();
@@ -80,6 +93,13 @@ std::vector<std::string> RDFReader::ToPartitionedCSV(const std::filesystem::path
         oss << outputFile << ", ";
     }
     std::cout << oss.str().substr(0, std::min((int) oss.str().length(), 100)) << "..." << std::endl;
+
+    auto outputFile = std::filesystem::path(outputDir) / std::filesystem::path("legend.csv");
+    std::ofstream ofstream(outputFile);
+    for (auto const & [key,val] : columnToInt)
+        ofstream << std::to_string(val) << "," << key << std::endl;
+    ofstream.close();
+    std::cout << "Legend (number,object): " << outputFile << std::endl;
 
     return output;
 }

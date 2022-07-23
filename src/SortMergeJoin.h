@@ -43,9 +43,9 @@ private:
     void Sort();
     void InitializeOutput();
     void Merge();
-    std::pair<std::vector<std::vector<std::string>>,std::vector<std::string>> Collect(CSVReader *reader, const std::vector<std::string> &row, unsigned int columnIndex);
+    std::pair<std::vector<std::vector<unsigned long>>,std::vector<unsigned long>> Collect(CSVReader *reader, const std::vector<unsigned long> &row, unsigned int columnIndex);
     void
-    CartesianProduct(const std::vector<std::vector<std::string>> & a, const std::vector<std::vector<std::string>> & b);
+    CartesianProduct(const std::vector<std::vector<unsigned long>> & a, const std::vector<std::vector<unsigned long>> & b);
 };
 
 

@@ -3,16 +3,17 @@
 //
 
 #include "HashJoin.h"
+#include <cmath>
 
 HashJoin::HashJoin(CSVReader *A, const std::string &columnA, CSVReader *B, const std::string &columnB,
-                   std::ostream *ostream, unsigned long long cacheSize, unsigned long long hashTableSize) {
+                   std::ostream *ostream, unsigned long long hashTableSize) {
     this->A = A;
     this->columnA = columnA;
     this->B = B;
     this->columnB = columnB;
     this->ostream = ostream;
-    this->cacheSize = cacheSize;
     this->hashTableSize = hashTableSize;
+    this->totalRowsInHashMap = 0;
 
     InitializeIndices();
     InitializeOutput();
@@ -22,13 +23,10 @@ unsigned long long HashJoin::GetHashTableSize() {
     // Approximate
     if (hashMap.empty()) return 0;
 
-    const auto & rows = hashMap.begin()->second;
-    unsigned long long size = hashMap.size() * (sizeof(rows) + rows.size() * (
-            sizeof(rows[0]) + rows[0].size() * (
-                    sizeof(rows[0][0]) + rows[0][0].length()
-            )
-    ));
-
+    auto size = hashMap.size() * (sizeof(std::vector<std::vector<unsigned long>>*) + sizeof(unsigned long))  // Size of map
+              + hashMap.size() * sizeof(std::vector<std::vector<unsigned long>>) // Size vectors pointed to
+              // Size of rows, x1.5 for allocation overhead
+              + ((unsigned long long)round(1.5 * totalRowsInHashMap)) * (sizeof(unsigned long) * A->columnNames.size() + sizeof(std::vector<unsigned long>));
     return size;
 }
 
@@ -36,28 +34,42 @@ void HashJoin::Join()  {
     std::cout << "\tBUILDING" << std::endl;
 
     auto row = A->GetNextRow();
-
     while (!row.empty()) {
         auto const &col = row[columnAIndex];
         // Initialize vector in hashMap if required; find should be constant time
         auto it = hashMap.find(col);
         if (it == hashMap.end()) {
-            auto result = hashMap.insert({col, {}});
+            auto vector = new std::vector<std::vector<unsigned long>>();
+            auto result = hashMap.insert({col, vector});
             it = result.first;
         }
-        it->second.push_back(row);
+        it->second->push_back(row);
+        totalRowsInHashMap++;
 
         if (GetHashTableSize() > hashTableSize) {
+            for (auto itr : hashMap) {
+                itr.second->shrink_to_fit();
+            }
             Probe();
+            for (auto itr : hashMap) {
+                delete itr.second;
+            }
             hashMap.clear();
+            totalRowsInHashMap = 0;
             std::cout << "\tBUILDING" << std::endl;
         }
 
         row = A->GetNextRow();
     }
 
+    for (auto itr : hashMap) {
+        itr.second->shrink_to_fit();
+    }
     Probe();
-    output->FlushCache();
+    for (auto itr : hashMap) {
+        delete itr.second;
+    }
+    hashMap.clear();
     std::cout << "\tROWS WRITTEN: " << output->getRowsWritten() << std::endl;
 }
 
@@ -94,7 +106,7 @@ void HashJoin::InitializeOutput() {
         }
     }
 
-    this->output = new CSVWriter(ostream, columns, ',', cacheSize);
+    this->output = new CSVWriter(ostream, columns, ',');
 }
 
 void HashJoin::InitializeIndices() {
@@ -121,8 +133,8 @@ void HashJoin::Probe() {
         if (it == hashMap.end()) { row = B->GetNextRow(); continue; }
 
         auto const & mapRows = it->second;
-        for (auto const & mapRow : mapRows) {
-            std::vector<std::string> newRow;
+        for (auto const & mapRow : *mapRows) {
+            std::vector<unsigned long> newRow;
 
             for (int i = 0; i < mapRow.size(); i++) {
                 if (i == columnAIndex) continue;
@@ -136,7 +148,7 @@ void HashJoin::Probe() {
                 newRow.push_back(row[i]);
             }
 
-            output->WriteNextRow( newRow);
+            output->WriteNextRow(newRow);
         }
 
         row = B->GetNextRow();

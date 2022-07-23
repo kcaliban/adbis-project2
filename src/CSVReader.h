@@ -17,7 +17,7 @@
 class CSVReader {
 public:
     explicit CSVReader(std::istream * istream, const char & delim, const std::string & tableName);
-    std::vector<std::string> GetNextRow();
+    std::vector<unsigned long> GetNextRow();
     void JumpToBegin();
     std::vector<std::string> columnNames;
     std::string tableName;
@@ -27,6 +27,7 @@ private:
     std::istream * istream;
 
     char delim;
+    std::vector<std::string> GetColumnNames();
 };
 
 
