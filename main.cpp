@@ -129,7 +129,7 @@ int processWatdiv10M() {
     auto likes = getCSVReader(outputDir, "http___dbuwaterlooca_galuc_wsdbm_likes.csv", "likes");
     auto hasReview = getCSVReader(outputDir, "http___purlorg_stuff_rev:hasReview.csv", "hasReview");
 
-    /* SMJ: SINGLE THREADED
+    /* SMJ: SINGLE THREADED */
     auto outputDirSMJ = "SMJ";
     auto outputPathSMJ = std::filesystem::path(outputDir) / outputDirSMJ;
     std::filesystem::create_directories(outputPathSMJ);
@@ -152,7 +152,7 @@ int processWatdiv10M() {
 
     // Delete files
     std::filesystem::remove_all(outputDirSMJ);
-*/
+
     /* SMJ: MULTI THREADED */
     auto outputDirSMJMT = "SMJ_MT";
     auto outputPathSMJMT = std::filesystem::path(outputDir) / outputDirSMJMT;
@@ -192,7 +192,7 @@ int processWatdiv10M() {
 
     std::cout << "-----------------------------" << std::endl;
     std::cout << "BENCHMARK RESULTS: " << std::endl;
-   // std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[s]" << std::endl;
+    std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[s]" << std::endl;
     std::cout << "\tSortMergeJoin (MT) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "[s]" << std::endl;
     std::cout << "\tHashJoin " << std::chrono::duration_cast<std::chrono::seconds>(endhashJoin - starthashJoin).count() << "[s]" << std::endl;
 
