@@ -89,11 +89,11 @@ unsigned long long ExternalSort::GetCachedSize() {
 
 unsigned long long ExternalSort::GetCachedSize(unsigned long long elements) {
     unsigned long long size = sizeof(std::vector<std::vector<unsigned long>*>) // Size of vector
-                              + ((unsigned long long) round(elements * 1.3))
+                              + ((unsigned long long) round(elements * 1.4))
                                 * sizeof(std::vector<unsigned long>*) // Size of pointers
-                              + ((unsigned long long) round(elements * 1.3))
+                              + ((unsigned long long) round(elements * 1.4))
                                 * sizeof(std::vector<unsigned long>) // Size of actual vectors
-                              + ((unsigned long long) round(elements * 1.3))
+                              + ((unsigned long long) round(elements * 1.4))
                                 * sizeof(unsigned long) * A->columnNames.size(); // Size of rows
     return size;
 }

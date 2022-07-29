@@ -54,47 +54,6 @@ void MemMergeSortThread(std::vector<std::vector<unsigned long>*> * threadCacheA,
     }
 }
 
-void MergeSortThread(const std::string& a, const std::string& b, const std::string& outputFile,
-                     const std::filesystem::path tempDir, CSVReader * A, unsigned int columnIndex) {
-    std::ofstream ostream(outputFile);
-    std::ifstream istreamA(tempDir / a);
-    std::ifstream istreamB(tempDir / b);
-
-    CSVReader readerA(&istreamA, ',', "a");
-    CSVReader readerB(&istreamB, ',', "b");
-    CSVWriter writer(&ostream, A->columnNames, ',');
-
-    auto rowA = readerA.GetNextRow();
-    auto rowB = readerB.GetNextRow();
-
-    while (!rowA.empty() && !rowB.empty()) {
-        if (rowA[columnIndex] < rowB[columnIndex]) {
-            writer.WriteNextRow(rowA);
-            rowA = readerA.GetNextRow();
-        } else if (rowA[columnIndex] > rowB[columnIndex]) {
-            writer.WriteNextRow(rowB);
-            rowB = readerB.GetNextRow();
-        } else {
-            writer.WriteNextRow(rowA);
-            writer.WriteNextRow(rowB);
-            rowA = readerA.GetNextRow();
-            rowB = readerB.GetNextRow();
-        }
-    }
-
-    // Write remaining rows
-    while (!rowA.empty()) {
-        writer.WriteNextRow(rowA);
-        rowA = readerA.GetNextRow();
-    }
-    while (!rowB.empty()) {
-        writer.WriteNextRow(rowB);
-        rowB = readerB.GetNextRow();
-    }
-
-    ostream.close();
-}
-
 /* CLASS FUNCTIONS */
 ExternalSortMultiThreaded::ExternalSortMultiThreaded(CSVReader *A, const std::string & column,
                            unsigned long long cacheSize, const std::filesystem::path & tempDir,
@@ -192,6 +151,7 @@ void ExternalSortMultiThreaded::KWayMergeSortMem() {
         // Merge pairs into new caches.
         for (const auto & pair : mergePairs) {
             auto newCache = new std::vector<std::vector<unsigned long> *> ();
+            newCache->reserve(caches[pair.first]->size() + caches[pair.second]->size());
             std::thread thread(MemMergeSortThread, caches[pair.first],
                                caches[pair.second], newCache, columnIndex);
             mergeThreads.push_back(std::move(thread));
@@ -248,13 +208,13 @@ void ExternalSortMultiThreaded::KWayMergeSortMem() {
 
 unsigned long long ExternalSortMultiThreaded::GetCachedSize(unsigned long long elements) {
     // We need to reserve more space for the temporary created results of memory merging
-    // and vector memory allocation in general, hence x1.5
+    // and vector memory allocation in general, hence x1.3
     unsigned long long size = sizeof(std::vector<std::vector<unsigned long>*>) // Size of vector
-                              + ((unsigned long long) round(elements * 1.5))
+                              + ((unsigned long long) round(elements * 1.4))
                                 * sizeof(std::vector<unsigned long>*) // Size of pointers
-                              + ((unsigned long long) round(elements * 1.5))
+                              + ((unsigned long long) round(elements * 1.4))
                                 * sizeof(std::vector<unsigned long>) // Size of actual vectors
-                              + ((unsigned long long) round(elements * 1.5))
+                              + ((unsigned long long) round(elements * 1.4))
                                 * sizeof(unsigned long) * A->columnNames.size(); // Size of rows
     return size;
 }
@@ -348,64 +308,3 @@ void ExternalSortMultiThreaded::MergeSort(const std::string& a, const std::strin
         rowB = readerB.GetNextRow();
     }
 }
-
-/* SLOWER THAN SINGLE THREADED!
- * Either error in implementation (TODO: check)
- * Or multi-threaded file I/O slower than single-threaded
- *
-void ExternalSortMultiThreaded::KWayMergeSort() {
-    while (tempFiles.size() > 1) {
-        std::vector<std::string> newTempFiles;
-        std::vector<std::pair<std::string,std::string>> mergePairs;
-        for (int i = 0; i < tempFiles.size() - 1; i += 2) {
-            mergePairs.emplace_back(
-                        std::make_pair(
-                        tempFiles[i], tempFiles[i + 1]
-                        )
-
-            );
-        }
-
-        std::vector<std::thread> mergeThreads;
-
-        // Merge pairs into new files
-        for (const auto & pair : mergePairs) {
-            auto mergedFileName = GetRandomString();
-            auto mergedFilePath = tempDir / mergedFileName;
-            newTempFiles.push_back(mergedFileName);
-
-            mergeThreads.emplace_back(
-                    std::thread(
-                            [] (const std::string & a, const std::string & b, const std::string & out,
-                                const std::filesystem::path & tempDir, CSVReader * A, unsigned int columnIndex) {
-                                MergeSortThread(a, b, out, tempDir, A, columnIndex);
-                            },
-                            pair.first, pair.second, mergedFilePath, tempDir, A, columnIndex
-                    )
-            );
-        }
-
-        for (auto& thread : mergeThreads)
-            thread.join();
-
-        // If number is uneven, last cache gets propagated
-        if (tempFiles.size() % 2 != 0) {
-            newTempFiles.push_back(tempFiles.back());
-            for (int i = 0; i < tempFiles.size() - 1; i++) {
-                std::filesystem::path filePath = tempDir / tempFiles[i];
-                std::filesystem::remove(filePath);
-            }
-        } else {
-            for (const auto & tmpFile : tempFiles) {
-                std::filesystem::path filePath = tempDir / tmpFile;
-                std::filesystem::remove(filePath);
-            }
-        }
-
-        tempFiles = newTempFiles;
-    }
-
-    // Move file
-    std::filesystem::rename(tempDir / tempFiles[0], outputFilePath);
-}
-*/

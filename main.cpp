@@ -113,8 +113,8 @@ int process100k() {
 }
 
 int processWatdiv10M() {
-    unsigned long long cacheSize = 10 * pow(2, 30);
-    unsigned long long hashMapSize = 10 * pow(2, 30);
+    unsigned long long cacheSize = 8 * pow(2, 30);
+    unsigned long long hashMapSize = 8 * pow(2, 30);
 
     const auto inputFile = "watdiv.10M.nt";
     const auto outputDir = "watdiv_10M_nt";
@@ -151,7 +151,7 @@ int processWatdiv10M() {
     hasReview.first->JumpToBegin();
 
     // Delete files
-    std::filesystem::remove_all(outputDirSMJ);
+    std::filesystem::remove_all(outputPathSMJ);
 
     /* SMJ: MULTI THREADED */
     auto outputDirSMJMT = "SMJ_MT";
@@ -177,7 +177,7 @@ int processWatdiv10M() {
     // Delete files
     std::filesystem::remove_all(outputPathSMJMT);
 
-    /* HASHJOIN*/
+    /* HASHJOIN */
     auto outputDirHJ = "HJ";
     auto outputPathHJ = std::filesystem::path(outputDir) / outputDirHJ;
     std::filesystem::create_directories(outputPathHJ);
@@ -197,12 +197,13 @@ int processWatdiv10M() {
     std::cout << "\tHashJoin " << std::chrono::duration_cast<std::chrono::seconds>(endhashJoin - starthashJoin).count() << "[s]" << std::endl;
 
     // Delete files
-    std::filesystem::remove_all(outputDirHJ);
+    std::filesystem::remove_all(outputPathHJ);
 
     return 0;
 }
 
 int main() {
     // process100k();
-    processWatdiv10M();
+    for (unsigned int i = 0; i < 10; i++)
+        processWatdiv10M();
 }
