@@ -223,9 +223,9 @@ void ExternalSortMultiThreaded::KWayMergeSortMem() {
 
     std::string outputFileName = GetRandomString();
     std::filesystem::path output = tempDir / outputFileName;
-    std::ofstream ofstream(output);
+    std::ofstream ofstream(output, std::ios::binary);
 
-    CSVWriter writer(&ofstream, A->columnNames, ',');
+    CSVWriter writer(&ofstream, A->columnNames, ',', true);
     for (const auto row : *(caches[0])) {
         writer.WriteNextRow(*row);
     }
@@ -312,13 +312,13 @@ void ExternalSortMultiThreaded::KWayMergeSort() {
 }
 
 void ExternalSortMultiThreaded::MergeSort(const std::string& a, const std::string& b, const std::string& outputFile) {
-    std::ofstream ostream(outputFile);
-    std::ifstream istreamA(tempDir / a);
-    std::ifstream istreamB(tempDir / b);
+    std::ofstream ostream(outputFile, std::ios::binary);
+    std::ifstream istreamA(tempDir / a, std::ios::binary);
+    std::ifstream istreamB(tempDir / b, std::ios::binary);
 
-    CSVReader readerA(&istreamA, ',', "a");
-    CSVReader readerB(&istreamB, ',', "b");
-    CSVWriter writer(&ostream, A->columnNames, ',');
+    CSVReader readerA(&istreamA, ',', "a", true);
+    CSVReader readerB(&istreamB, ',', "b", true);
+    CSVWriter writer(&ostream, A->columnNames, ',', true);
 
     auto rowA = readerA.GetNextRow();
     auto rowB = readerB.GetNextRow();

@@ -89,8 +89,8 @@ void SortMergeJoin::Sort(bool multiThreaded) {
         ExternalSortA.Sort();
         endSortA = std::chrono::steady_clock::now();
     }
-    istreamA = new std::ifstream(sortedAOutputPath);
-    sortedA = new CSVReader(istreamA, ',', sortedAFileName);
+    istreamA = new std::ifstream(sortedAOutputPath, std::ios::binary);
+    sortedA = new CSVReader(istreamA, ',', sortedAFileName, true);
 
     std::cout << "\t\tSORTED A IN " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortA - startSortA).count() << "[ms]" << std::endl;
 
@@ -110,8 +110,8 @@ void SortMergeJoin::Sort(bool multiThreaded) {
         ExternalSortB.Sort();
         endSortB = std::chrono::steady_clock::now();
     }
-    istreamB = new std::ifstream(sortedBOutputPath);
-    sortedB = new CSVReader(istreamB, ',', sortedBFileName);
+    istreamB = new std::ifstream(sortedBOutputPath, std::ios::binary);
+    sortedB = new CSVReader(istreamB, ',', sortedBFileName, true);
 
     std::cout << "\t\tSORTED B IN " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortB - startSortB).count() << "[ms]" << std::endl;
 }

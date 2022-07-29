@@ -12,7 +12,7 @@
 class CSVWriter {
 public:
     explicit CSVWriter(std::ostream * ostream, const std::vector<std::string> & columnNames,
-                       const char & delim);
+                       const char & delim, bool binary = false);
     void WriteNextRow(const std::vector<unsigned long> & row);
     virtual ~CSVWriter() = default;
     unsigned long long getRowsWritten() const;
@@ -20,6 +20,7 @@ private:
     std::ostream * ostream;
     std::vector<std::vector<unsigned long long>> cachedRows;
     char delim;
+    bool binary;
     unsigned long long rowsWritten;
 };
 

@@ -63,7 +63,7 @@ int process100k() {
     std::filesystem::path tempDir = std::filesystem::path(outputDir) / tempSubDir;
     std::filesystem::create_directories(tempDir);
 
-    RDFReader(inputFile).ToPartitionedCSV(outputDir);
+    // RDFReader(inputFile).ToPartitionedCSV(outputDir);
 
     auto follows = getCSVReader(outputDir, "wsdbm_follows.csv", "follows");
     auto friendOf = getCSVReader(outputDir, "wsdbm_friendOf.csv", "friendOf");
@@ -122,14 +122,14 @@ int processWatdiv10M() {
     std::filesystem::path tempDir = std::filesystem::path(outputDir) / tempSubDir;
     std::filesystem::create_directories(tempDir);
 
-    RDFReader(inputFile).ToPartitionedCSV(outputDir);
+    // RDFReader(inputFile).ToPartitionedCSV(outputDir);
 
     auto follows = getCSVReader(outputDir, "http___dbuwaterlooca_galuc_wsdbm_follows.csv", "follows");
     auto friendOf = getCSVReader(outputDir, "http___dbuwaterlooca_galuc_wsdbm_friendOf.csv", "friendOf");
     auto likes = getCSVReader(outputDir, "http___dbuwaterlooca_galuc_wsdbm_likes.csv", "likes");
     auto hasReview = getCSVReader(outputDir, "http___purlorg_stuff_rev:hasReview.csv", "hasReview");
 
-    /* SMJ: SINGLE THREADED */
+    /* SMJ: SINGLE THREADED
     auto outputDirSMJ = "SMJ";
     auto outputPathSMJ = std::filesystem::path(outputDir) / outputDirSMJ;
     std::filesystem::create_directories(outputPathSMJ);
@@ -150,6 +150,9 @@ int processWatdiv10M() {
     likes.first->JumpToBegin();
     hasReview.first->JumpToBegin();
 
+    // Delete files
+    std::filesystem::remove_all(outputDirSMJ);
+*/
     /* SMJ: MULTI THREADED */
     auto outputDirSMJMT = "SMJ_MT";
     auto outputPathSMJMT = std::filesystem::path(outputDir) / outputDirSMJMT;
@@ -171,6 +174,9 @@ int processWatdiv10M() {
     likes.first->JumpToBegin();
     hasReview.first->JumpToBegin();
 
+    // Delete files
+    std::filesystem::remove_all(outputPathSMJMT);
+
     /* HASHJOIN*/
     auto outputDirHJ = "HJ";
     auto outputPathHJ = std::filesystem::path(outputDir) / outputDirHJ;
@@ -186,12 +192,12 @@ int processWatdiv10M() {
 
     std::cout << "-----------------------------" << std::endl;
     std::cout << "BENCHMARK RESULTS: " << std::endl;
-    std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[s]" << std::endl;
+   // std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[s]" << std::endl;
     std::cout << "\tSortMergeJoin (MT) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "[s]" << std::endl;
     std::cout << "\tHashJoin " << std::chrono::duration_cast<std::chrono::seconds>(endhashJoin - starthashJoin).count() << "[s]" << std::endl;
 
-    // Delete all
-    // std::filesystem::remove_all(outputDir);
+    // Delete files
+    std::filesystem::remove_all(outputDirHJ);
 
     return 0;
 }

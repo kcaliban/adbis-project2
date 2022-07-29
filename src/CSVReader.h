@@ -16,15 +16,17 @@
  */
 class CSVReader {
 public:
-    explicit CSVReader(std::istream * istream, const char & delim, const std::string & tableName);
+    explicit CSVReader(std::istream * istream, const char & delim,
+                       const std::string & tableName, bool binary = false);
     std::vector<unsigned long> GetNextRow();
     void JumpToBegin();
     std::vector<std::string> columnNames;
     std::string tableName;
     virtual ~CSVReader() = default;
-    unsigned int GetNumberOfRows();
 private:
     std::istream * istream;
+    bool binary;
+    unsigned int columns;
 
     char delim;
     std::vector<std::string> GetColumnNames();
