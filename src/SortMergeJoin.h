@@ -16,7 +16,7 @@ public:
                            CSVReader * B, const std::string& columnB,
                            std::ostream * ostream, unsigned long long cacheSize,
                            std::filesystem::path tempDir);
-    void Join();
+    void Join(bool multiThreaded = false);
     virtual ~SortMergeJoin() {
         delete output;
         delete sortedA;
@@ -40,7 +40,7 @@ private:
     unsigned long long cacheSize;
     std::filesystem::path tempDir;
 
-    void Sort();
+    void Sort(bool multiThreaded = false);
     void InitializeOutput();
     void Merge();
     std::pair<std::vector<std::vector<unsigned long>>,std::vector<unsigned long>> Collect(CSVReader *reader, const std::vector<unsigned long> &row, unsigned int columnIndex);

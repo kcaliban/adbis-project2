@@ -7,7 +7,12 @@
 #include <algorithm>
 #include <random>
 #include <iostream>
+#include <thread>
+#include <future>
+#include <chrono>
+#include "Auxiliary.h"
 
+/* CLASS FUNCTIONS */
 ExternalSort::ExternalSort(CSVReader *A, const std::string & column,
                            unsigned long long cacheSize, const std::filesystem::path & tempDir,
                            const std::filesystem::path & outputFilePath) {
@@ -22,15 +27,22 @@ ExternalSort::ExternalSort(CSVReader *A, const std::string & column,
     }
 }
 
-void ExternalSort::Sort() {
+void ExternalSort::Sort(unsigned int numThreads) {
     std::cout << "\t\t\tCREATE AND SORT CHUNKS" << std::endl;
+    auto startChunks = std::chrono::steady_clock::now();
     CreateAndSortChunks();
+    auto endChunks = std::chrono::steady_clock::now();
+    std::cout << "\t\t\tFINISHED IN " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunks - startChunks).count() << "[ms]" << std::endl;
+
     std::cout << "\t\t\tMERGE CHUNKS" << std::endl;
+    auto startMerge = std::chrono::steady_clock::now();
     KWayMergeSort();
+    auto endMerge = std::chrono::steady_clock::now();
+    std::cout << "\t\t\tFINISHED IN " << std::chrono::duration_cast<std::chrono::milliseconds>(endMerge - startMerge).count() << "[ms]" << std::endl;
 }
 
 void ExternalSort::ClearCache() {
-    for (auto it : cache) {
+    for (auto it: cache) {
         delete it;
     }
     cache.clear();
@@ -72,12 +84,16 @@ void ExternalSort::CreateAndSortChunks() {
 
 unsigned long long ExternalSort::GetCachedSize() {
     if (cache.empty()) return 0;
+    return GetCachedSize(cache.size());
+}
+
+unsigned long long ExternalSort::GetCachedSize(unsigned long long elements) {
     unsigned long long size = sizeof(std::vector<std::vector<unsigned long>*>) // Size of vector
-                             + ((unsigned long long) round(cache.size() * 1.5))
+                              + ((unsigned long long) round(elements * 1.3))
                                 * sizeof(std::vector<unsigned long>*) // Size of pointers
-                             + ((unsigned long long) round(cache.size() * 1.5))
+                              + ((unsigned long long) round(elements * 1.3))
                                 * sizeof(std::vector<unsigned long>) // Size of actual vectors
-                             + ((unsigned long long) round(cache.size() * 1.5))
+                              + ((unsigned long long) round(elements * 1.3))
                                 * sizeof(unsigned long) * A->columnNames.size(); // Size of rows
     return size;
 }
@@ -101,9 +117,9 @@ void ExternalSort::KWayMergeSort() {
         std::vector<std::pair<std::string,std::string>> mergePairs;
         for (int i = 0; i < tempFiles.size() - 1; i += 2) {
             mergePairs.emplace_back(
-                        std::make_pair(
-                        tempFiles[i], tempFiles[i + 1]
-                        )
+                    std::make_pair(
+                            tempFiles[i], tempFiles[i + 1]
+                    )
 
             );
         }
@@ -112,6 +128,7 @@ void ExternalSort::KWayMergeSort() {
         for (const auto & pair : mergePairs) {
             auto mergedFileName = GetRandomString();
             auto mergedFilePath = tempDir / mergedFileName;
+
 
             MergeSort(pair.first, pair.second, mergedFilePath);
             newTempFiles.push_back(mergedFileName);
@@ -184,21 +201,4 @@ void ExternalSort::MergeSort(const std::string& a, const std::string& b, const s
     }
 }
 
-std::string ExternalSort::GetRandomString() {
-    static auto& chrs = "0123456789"
-                        "abcdefghijklmnopqrstuvwxyz"
-                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    thread_local static std::mt19937 rg{std::random_device{}()};
-    thread_local static std::uniform_int_distribution<std::string::size_type> pick(0, sizeof(chrs) - 2);
-
-    std::string s;
-
-    size_t length = 30;
-    s.reserve(length);
-
-    while(--length)
-        s += chrs[pick(rg)];
-
-    return s;
-}

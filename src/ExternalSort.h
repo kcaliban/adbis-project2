@@ -2,8 +2,8 @@
 // Created by fk on 21.07.22.
 //
 
-#ifndef PROJECT2_EXTERNALSORT_H
-#define PROJECT2_EXTERNALSORT_H
+#ifndef PROJECT2_ExternalSort_H
+#define PROJECT2_ExternalSort_H
 
 #include "CSVReader.h"
 #include <fstream>
@@ -16,7 +16,7 @@ public:
                  const std::filesystem::path &tempDir,
                  const std::filesystem::path &outputFilePath);
 
-    void Sort();
+    void Sort(unsigned int numThreads = 0);
 private:
     unsigned long long cacheSize;
     unsigned int columnIndex;
@@ -27,14 +27,14 @@ private:
     std::filesystem::path outputFilePath;
 
     unsigned long long GetCachedSize();
+    unsigned long long GetCachedSize(unsigned long long);
     void WriteCacheToNewFile();
     void CreateAndSortChunks();
     void KWayMergeSort();
     void MergeSort(const std::string& a, const std::string& b, const std::string& outputFile);
-    std::string GetRandomString();
     void ClearCache();
     void SortCache();
 };
 
 
-#endif //PROJECT2_EXTERNALSORT_H
+#endif //PROJECT2_ExternalSort_H

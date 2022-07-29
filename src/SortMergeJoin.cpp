@@ -4,8 +4,12 @@
 
 #include "SortMergeJoin.h"
 #include "ExternalSort.h"
+#include "ExternalSortMultiThreaded.h"
 #include <unordered_set>
 #include <iostream>
+#include <thread>
+#include <chrono>
+#include <cmath>
 
 SortMergeJoin::SortMergeJoin(CSVReader *A, const std::string &columnA, CSVReader *B,
                              const std::string &columnB, std::ostream *ostream,
@@ -68,37 +72,60 @@ void SortMergeJoin::InitializeOutput() {
     this->output = new CSVWriter(ostream, columns, ',');
 }
 
-void SortMergeJoin::Sort() {
+void SortMergeJoin::Sort(bool multiThreaded) {
     std::string sortedAFileName = A->tableName + "_sorted";
     std::filesystem::path sortedAOutputPath = tempDir / sortedAFileName;
-    ExternalSort externalSortA(A, columnA, cacheSize, tempDir, sortedAOutputPath);
+    std::chrono::time_point<std::chrono::steady_clock> startSortA;
+    std::chrono::time_point<std::chrono::steady_clock> endSortA;
     std::cout << "\t\tSTART SORTING A" << std::endl;
-    externalSortA.Sort();
+    if (multiThreaded) {
+        ExternalSortMultiThreaded ExternalSortA(A, columnA, cacheSize, tempDir, sortedAOutputPath, std::thread::hardware_concurrency());
+        startSortA = std::chrono::steady_clock::now();
+        ExternalSortA.Sort();
+        endSortA = std::chrono::steady_clock::now();
+    } else {
+        ExternalSort ExternalSortA(A, columnA, cacheSize, tempDir, sortedAOutputPath);
+        startSortA = std::chrono::steady_clock::now();
+        ExternalSortA.Sort();
+        endSortA = std::chrono::steady_clock::now();
+    }
     istreamA = new std::ifstream(sortedAOutputPath);
     sortedA = new CSVReader(istreamA, ',', sortedAFileName);
 
-    std::cout << "\t\tSORTED A" << std::endl;
+    std::cout << "\t\tSORTED A IN " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortA - startSortA).count() << "[ms]" << std::endl;
 
     std::string sortedBFileName = B->tableName + "_sorted";
     std::filesystem::path sortedBOutputPath = tempDir / sortedBFileName;
-    ExternalSort externalSortB(B, columnB, cacheSize, tempDir, sortedBOutputPath);
+    std::chrono::time_point<std::chrono::steady_clock> startSortB;
+    std::chrono::time_point<std::chrono::steady_clock> endSortB;
     std::cout << "\t\tSTART SORTING B" << std::endl;
-    externalSortB.Sort();
+    if (multiThreaded) {
+        ExternalSortMultiThreaded ExternalSortB(B, columnB, cacheSize, tempDir, sortedBOutputPath, std::thread::hardware_concurrency());
+        startSortB = std::chrono::steady_clock::now();
+        ExternalSortB.Sort();
+        endSortB = std::chrono::steady_clock::now();
+    } else {
+        ExternalSort ExternalSortB(B, columnB, cacheSize, tempDir, sortedBOutputPath);
+        startSortB = std::chrono::steady_clock::now();
+        ExternalSortB.Sort();
+        endSortB = std::chrono::steady_clock::now();
+    }
     istreamB = new std::ifstream(sortedBOutputPath);
     sortedB = new CSVReader(istreamB, ',', sortedBFileName);
 
-    std::cout << "\t\tSORTED B" << std::endl;
+    std::cout << "\t\tSORTED B IN " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortB - startSortB).count() << "[ms]" << std::endl;
 }
 
-void SortMergeJoin::Join() {
+void SortMergeJoin::Join(bool multiThreaded) {
     std::cout << "\tSORT" << std::endl;
-    Sort();
+    Sort(multiThreaded);
     std::cout << "\tMERGE" << std::endl;
     Merge();
     std::cout << "\tROWS WRITTEN: " << output->getRowsWritten() << std::endl;
 }
 
 void SortMergeJoin::Merge() {
+    auto startMerge = std::chrono::steady_clock::now();
     auto rowA = sortedA->GetNextRow();
     auto rowB = sortedB->GetNextRow();
 
@@ -115,6 +142,8 @@ void SortMergeJoin::Merge() {
             rowB = setB.second;
         }
     }
+    auto endMerge = std::chrono::steady_clock::now();
+    std::cout << "\t\tMERGED IN " << std::chrono::duration_cast<std::chrono::milliseconds>(endMerge - startMerge).count() << "[ms]" << std::endl;
 }
 
 std::pair<std::vector<std::vector<unsigned long>>,std::vector<unsigned long>>
