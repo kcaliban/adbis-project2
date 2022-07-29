@@ -349,7 +349,10 @@ void ExternalSortMultiThreaded::MergeSort(const std::string& a, const std::strin
     }
 }
 
-/*
+/* SLOWER THAN SINGLE THREADED!
+ * Either error in implementation (TODO: check)
+ * Or multi-threaded file I/O slower than single-threaded
+ *
 void ExternalSortMultiThreaded::KWayMergeSort() {
     while (tempFiles.size() > 1) {
         std::vector<std::string> newTempFiles;
