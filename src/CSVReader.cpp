@@ -17,7 +17,7 @@ CSVReader::CSVReader(std::istream * istream, const char & delim,
     else {
         char chars[sizeof(unsigned int)];
         istream->read(chars, sizeof(unsigned int));
-        memcpy(&this->columns, chars, sizeof(unsigned long));
+        memcpy(&this->columns, chars, sizeof(unsigned int));
     }
     this->tableName = tableName;
 }

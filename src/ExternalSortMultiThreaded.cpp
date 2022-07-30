@@ -307,4 +307,8 @@ void ExternalSortMultiThreaded::MergeSort(const std::string& a, const std::strin
         writer.WriteNextRow(rowB);
         rowB = readerB.GetNextRow();
     }
+
+    istreamA.close();
+    istreamB.close();
+    ostream.close();
 }

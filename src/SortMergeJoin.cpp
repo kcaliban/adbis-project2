@@ -14,7 +14,7 @@
 SortMergeJoin::SortMergeJoin(CSVReader *A, const std::string &columnA, CSVReader *B,
                              const std::string &columnB, std::ostream *ostream,
                              unsigned long long cacheSize,
-                             std::filesystem::path tempDir) {
+                             const std::filesystem::path & tempDir) {
     this->A = A;
     this->B = B;
     this->columnA = columnA;
@@ -122,6 +122,9 @@ void SortMergeJoin::Join(bool multiThreaded) {
     std::cout << "\tMERGE" << std::endl;
     Merge();
     std::cout << "\tROWS WRITTEN: " << output->getRowsWritten() << std::endl;
+    istreamA->close();
+    istreamB->close();
+
 }
 
 void SortMergeJoin::Merge() {

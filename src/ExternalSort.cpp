@@ -108,6 +108,7 @@ void ExternalSort::WriteCacheToNewFile() {
         writer.WriteNextRow(*row);
     }
 
+    ofstream.close();
     tempFiles.push_back(outputFileName);
 }
 
@@ -199,6 +200,10 @@ void ExternalSort::MergeSort(const std::string& a, const std::string& b, const s
         writer.WriteNextRow(rowB);
         rowB = readerB.GetNextRow();
     }
+
+    istreamA.close();
+    istreamB.close();
+    ostream.close();
 }
 
 
