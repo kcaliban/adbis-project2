@@ -14,4 +14,7 @@ cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
+## Running benchmarks
+Place `100k.txt` and `watdiv.10M.nt` in the `build` directoy.
+Run from inside build directory using `./project2_run`.
 

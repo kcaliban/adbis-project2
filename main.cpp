@@ -88,7 +88,7 @@ int process100k(std::ofstream & file) {
     auto thirdSMJST = sortMergeJoin(secondSMJST.first, hasReview.first, "likes.Object", "Subject", outputPathSMJ, cacheSize, tempDir);
     auto endSortMergeJoinST = std::chrono::steady_clock::now();
 
-    std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[s]" << std::endl;
+    std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[ms]" << std::endl;
 
     // Reset readers
     follows.first->JumpToBegin();
@@ -118,7 +118,7 @@ int process100k(std::ofstream & file) {
     auto thirdSMJ = sortMergeJoin(secondSMJ.first, hasReview.first, "likes.Object", "Subject", outputPathSMJMT, cacheSize, tempDir, true);
     auto endSortMergeJoinMT = std::chrono::steady_clock::now();
 
-    std::cout << "\tSortMergeJoin (MT) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "[s]" << std::endl;
+    std::cout << "\tSortMergeJoin (MT) " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "[ms]" << std::endl;
 
     // Reset readers
     follows.first->JumpToBegin();
@@ -150,11 +150,11 @@ int process100k(std::ofstream & file) {
 
     std::cout << "-----------------------------" << std::endl;
     std::cout << "BENCHMARK RESULTS: " << std::endl;
-    std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[s]" << std::endl;
+    std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[ms]" << std::endl;
     file << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "\t";
-    std::cout << "\tSortMergeJoin (MT) " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "[s]" << std::endl;
+    std::cout << "\tSortMergeJoin (MT) " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "[ms]" << std::endl;
     file << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "\t";
-    std::cout << "\tHashJoin " << std::chrono::duration_cast<std::chrono::milliseconds>(endhashJoin - starthashJoin).count() << "[s]" << std::endl;
+    std::cout << "\tHashJoin " << std::chrono::duration_cast<std::chrono::milliseconds>(endhashJoin - starthashJoin).count() << "[ms]" << std::endl;
     file << std::chrono::duration_cast<std::chrono::milliseconds>(endhashJoin - starthashJoin).count() << "\t" << std::endl;
 
     // Close files
