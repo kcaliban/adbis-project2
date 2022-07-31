@@ -1,4 +1,4 @@
-# Advanced Database and Information Systems Project 2
+# ADBIS: Project 2
 This repository contains an implementation of:
 * Hash join
 * Sort-merge join
