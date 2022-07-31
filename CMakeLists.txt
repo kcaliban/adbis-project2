@@ -2,7 +2,17 @@ cmake_minimum_required(VERSION 3.22)
 project(project2)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-configure_file(100k.txt 100k.txt COPYONLY)
-configure_file(watdiv.10M.nt watdiv.10M.nt COPYONLY)
-add_executable(project2 main.cpp Relation.cpp Relation.h HashJoin.cpp HashJoin.h)
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+
+set(SOURCE main.cpp)
+add_executable(project2_run ${SOURCE})
+
+include_directories(src)
+
+add_subdirectory(src)
+
+target_link_libraries(project2_run project2 Threads::Threads)

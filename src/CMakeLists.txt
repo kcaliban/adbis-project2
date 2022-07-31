@@ -1,0 +1,17 @@
+add_library(project2
+        CSVWriter.cpp
+        CSVWriter.h
+        CSVReader.cpp
+        CSVReader.h
+        HashJoin.cpp
+        HashJoin.h
+        SortMergeJoin.cpp
+        SortMergeJoin.h
+        ExternalSort.cpp
+        ExternalSort.h
+        ExternalSortMultiThreaded.cpp
+        ExternalSortMultiThreaded.h
+        RDFReader.cpp
+        RDFReader.h
+        Auxiliary.cpp
+        Auxiliary.h)
