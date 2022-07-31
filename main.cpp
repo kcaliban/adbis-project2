@@ -150,12 +150,12 @@ int process100k(std::ofstream & file) {
 
     std::cout << "-----------------------------" << std::endl;
     std::cout << "BENCHMARK RESULTS: " << std::endl;
-    std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[s]" << std::endl;
-    file << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "\t";
-    std::cout << "\tSortMergeJoin (MT) " << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "[s]" << std::endl;
-    file << std::chrono::duration_cast<std::chrono::seconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "\t";
-    std::cout << "\tHashJoin " << std::chrono::duration_cast<std::chrono::seconds>(endhashJoin - starthashJoin).count() << "[s]" << std::endl;
-    file << std::chrono::duration_cast<std::chrono::seconds>(endhashJoin - starthashJoin).count() << "\t" << std::endl;
+    std::cout << "\tSortMergeJoin (ST) " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "[s]" << std::endl;
+    file << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinST - startSortMergeJoinST).count() << "\t";
+    std::cout << "\tSortMergeJoin (MT) " << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "[s]" << std::endl;
+    file << std::chrono::duration_cast<std::chrono::milliseconds>(endSortMergeJoinMT - startSortMergeJoinMT).count() << "\t";
+    std::cout << "\tHashJoin " << std::chrono::duration_cast<std::chrono::milliseconds>(endhashJoin - starthashJoin).count() << "[s]" << std::endl;
+    file << std::chrono::duration_cast<std::chrono::milliseconds>(endhashJoin - starthashJoin).count() << "\t" << std::endl;
 
     // Close files
     firstHashJoin.second->close();
@@ -179,7 +179,7 @@ int processWatdiv10M(std::ofstream & file) {
     std::filesystem::path tempDir = std::filesystem::path(outputDir) / tempSubDir;
     std::filesystem::create_directories(tempDir);
 
-    // RDFReader(inputFile).ToPartitionedCSV(outputDir);
+    RDFReader(inputFile).ToPartitionedCSV(outputDir);
 
     auto follows = getCSVReader(outputDir, "http___dbuwaterlooca_galuc_wsdbm_follows.csv", "follows");
     auto friendOf = getCSVReader(outputDir, "http___dbuwaterlooca_galuc_wsdbm_friendOf.csv", "friendOf");
@@ -286,8 +286,10 @@ int main() {
     for (unsigned int i = 0; i < 50; i++)
         process100k(file);
     file.close();
+
     file = std::ofstream("watdiv_bench");
-    for (unsigned int i = 0; i < 10; i++)
+    file << "SMJ\tSMJMT\tHJ" << std::endl;
+    for (unsigned int i = 0; i < 5; i++)
         processWatdiv10M(file);
     file.close();
 }
