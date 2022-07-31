@@ -6,3 +6,12 @@ This repository contains an implementation of:
 
 A complexity analysis and benchmark of these algorithms
 can be found in `Project2.pdf`.
+
+## Build instructions
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+```
+
